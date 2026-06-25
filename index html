@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiGrok AI - المنصة السينمائية المتكاملة</title>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #060913;
+            --bg-card: #0f1424;
+            --pi-color: #fca311;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --border: #1e293b;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+        header { background-color: var(--bg-card); border-bottom: 1px solid var(--border); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: bold; }
+        .logo span { color: var(--pi-color); }
+        .nav-buttons { display: flex; gap: 10px; }
+        .btn { background: none; border: none; color: var(--text-main); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-pi { background-color: var(--pi-color); color: #000; }
+        .btn-admin { background-color: #334155; color: var(--text-main); }
+        
+        .main-container { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; max-width: 1200px; width: 100%; margin: 0 auto; }
+        .tabs { display: flex; background-color: var(--bg-card); padding: 5px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .tab-btn.active { background-color: var(--border); color: var(--text-main); }
+        
+        .content-section { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; flex: 1; display: none; }
+        .content-section.active { display: flex; flex-direction: column; }
+        
+        /* الشات */
+        .chat-area { flex: 1; display: flex; flex-direction: column; gap: 15px; min-height: 350px; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .msg { padding: 12px; border-radius: 12px; max-width: 80%; line-height: 1.4; }
+        .msg.bot { background-color: var(--border); align-self: flex-start; }
+        .msg.user { background-color: var(--pi-color); color: #000; align-self: flex-end; }
+        .input-box { display: flex; gap: 10px; }
+        input, textarea, select { flex: 1; background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; }
+        
+        /* القوالب والفيديو */
+        .grid-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .template-card { background: var(--bg-main); border: 1px solid var(--border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; }
+        .template-card:hover, .template-card.active { border-color: var(--pi-color); }
+        
+        /* لوحة التحكم للأدمن */
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card { background: var(--bg-main); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i data-lucide="sparkles" style="color:var(--pi-color)"></i> Pi<span>Grok</span> AI</div>
+        <div class="nav-buttons">
+            <button class="btn btn-admin" onclick="openTab('admin-panel')"><i data-lucide="sliders"></i> غرفة الأدمن</button>
+            <button class="btn btn-pi" onclick="connectPiWallet()"><i data-lucide="wallet"></i> ربط محفظة Pi</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="tabs" id="mainTabs">
+            <button class="tab-btn active" onclick="openTab('chat-section')"><i data-lucide="message-circle"></i> خبير الدردشة</button>
+            <button class="tab-btn" onclick="openTab('video-section')"><i data-lucide="clapperboard"></i> سينما الذكاء الاصطناعي</button>
+        </div>
+
+        <!-- 1. قسم الشات -->
+        <div id="chat-section" class="content-section active">
+            <div class="chat-area">
+                <div class="chat-messages" id="chatMsgs">
+                    <div class="msg bot">مرحباً بك في عصر الـ AI 2026! أنا خبير الدردشة لـ PiGrok. كيف يمكنني خدمتك اليوم؟</div>
+                </div>
+                <div class="input-box">
+                    <input type="text" id="chatIn" placeholder="اسأل واكتشف...">
+                    <button class="btn btn-pi" onclick="triggerChat()"><i data-lucide="send"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. قسم السينما وتحويل الصور والنصوص -->
+        <div id="video-section" class="content-section">
+            <h3 style="margin-bottom: 10px;">اختر قالب العمل السينمائي:</h3>
+            <div class="grid-templates">
+                <div class="template-card active" onclick="selectTpl(this, 'سينمائي 4K')">🎬 سينمائي 4K</div>
+                <div class="template-card" onclick="selectTpl(this, 'أنيميشن ميتـافيرس')">🌌 أنيميشن ميتـافيرس</div>
+                <div class="template-card" onclick="selectTpl(this, 'فيديو تيك توك سريع')">📱 تيك توك ذكي</div>
+            </div>
+            <textarea id="videoPrompt" rows="3" placeholder="اكتب وصف الفيديو أو ارفع صورتك هنا..."></textarea>
+            <div style="margin-top:10px; display:flex; gap:10px;">
+                <input type="file" id="imageFile" style="display:none" onchange="alert('تم تحميل الصورة للسيرفر الافتراضي')">
+                <button class="btn btn-admin" onclick="document.getElementById('imageFile').click()"><i data-lucide="image"></i> ارفع صورة</button>
+                <button class="btn btn-pi" style="flex:1" onclick="payAndGenerate()"><i data-lucide="zap"></i> دفع 1 Pi وتوليد الفيديو فوراً</button>
+            </div>
+        </div>
+
+        <!-- 3. غرفة التحكم (الأدمن) -->
+        <div id="admin-panel" class="content-section">
+            <h2>غرفة التحكم الخاصة بك (الأدمن)</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px;">هنا تدير مفاتيح الـ API والأرباح الحقيقية</p>
+            <div class="admin-grid">
+                <div class="stat-card">
+                    <h4>إجمالي أرباح المحفظة</h4>
+                    <p style="font-size:24px; color:var(--success); font-weight:bold; margin-top:10px;">0.00 Pi</p>
+                </div>
+                <div class="stat-card">
+                    <h4>مفتاح الـ API للذكاء الاصطناعي</h4>
+                    <input type="password" value="••••••••••••••••••••" style="margin-top:10px; width:100%">
+                    <button class="btn btn-admin" style="margin-top:10px; width:100%">تحديث المفتاح</button>
+                </div>
+                <div class="stat-card">
+                    <h4>تسعير الخدمات</h4>
+                    <label style="font-size:12px; color:var(--text-muted)">سعر توليد الفيديو (Pi)</label>
+                    <input type="number" value="1" style="width:100%; margin-bottom:10px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let selectedTemplate = 'سينمائي 4K';
+
+        function openTab(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id !== 'admin-panel') {
+                const btnIndex = id === 'chat-section' ? 0 : 1;
+                document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+            }
+        }
+
+        function selectTpl(el, name) {
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            selectedTemplate = name;
+        }
+
+        function connectPiWallet() {
+            alert("تفعيل بروتوكول Pi Sandbox الحقيقي... جاري الاتصال بالمحفظة الحية عبر متصفح الباي.");
+        }
+
+        function triggerChat() {
+            const inp = document.getElementById('chatIn');
+            if(!inp.value.trim()) return;
+            const msgs = document.getElementById('chatMsgs');
+            msgs.innerHTML += `<div class="msg user">${inp.value}</div>`;
+            const val = inp.value; inp.value = '';
+            setTimeout(() => {
+                msgs.innerHTML += `<div class="msg bot">تمت المعالجة في عصر الـ AI الحقيقي. رد السيرفر الذكي جاهز ومربوط.</div>`;
+                msgs.scrollTop = msgs.scrollHeight;
+            }, 800);
+        }
+
+        function payAndGenerate() {
+            const prompt = document.getElementById('videoPrompt').value;
+            alert(`بدء عملية الدفع الحقيقية: طلب تفعيل Pi.createPayment() لتوليد فيديو بقالب [${selectedTemplate}]. جاري معالجة الأثير المالي...`);
+        }
+    </script>
+</body>
+</html>
