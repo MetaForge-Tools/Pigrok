@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PiGrok AI - المنصة العالمية الموثقة</title>
+    <title>PiGrok AI - المنصة الموثقة للأفراد والشركات</title>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
     <style>
         :root {
@@ -23,10 +23,15 @@
         
         /* شاشة الدخول والتسجيل الصارمة */
         .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .auth-box { background: var(--bg-card); border: 1px solid var(--border-gray); border-radius: 24px; max-width: 480px; width: 100%; padding: 30px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+        .auth-box { background: var(--bg-card); border: 1px solid var(--border-gray); border-radius: 24px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
         .auth-title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 8px; }
         .auth-title span { color: var(--pi-orange); }
         
+        /* أزرار اختيار نوع الحساب */
+        .account-type-tabs { display: flex; gap: 10px; margin: 15px 0; }
+        .acc-type-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-gray); color: var(--text-gray); border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; text-align: center; transition: 0.2s; }
+        .acc-type-btn.active { border-color: var(--pi-orange); color: #fff; background: rgba(252, 163, 17, 0.05); }
+
         /* علوية التحكم للتطبيق */
         .pi-header { background-color: var(--bg-card); border-bottom: 1px solid var(--border-gray); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .pi-logo { font-size: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
@@ -54,7 +59,6 @@
         
         .grok-input-wrapper { background-color: var(--bg-input); border: 1px solid var(--border-gray); border-radius: 24px; padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
         .grok-textarea { flex: 1; background: none; border: none; color: var(--text-white); outline: none; resize: none; font-size: 16px; min-height: 24px; }
-        .grok-input-actions { display: flex; justify-content: space-between; align-items: center; }
 
         /* قسم تخيل */
         .section-imagine { display: none; flex-direction: column; gap: 25px; }
@@ -69,6 +73,18 @@
         input, select { background: var(--bg-input); border: 1px solid var(--border-gray); color: #fff; padding: 12px; border-radius: 10px; width: 100%; outline: none; margin-top: 5px; font-size: 14px; }
         input:focus { border-color: var(--pi-orange); }
         label { font-size: 13px; color: var(--text-gray); font-weight: 500; }
+
+        /* تبديل الفترة الدورية (شهري / سنوي) */
+        .billing-toggle-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--bg-input); padding: 8px; border-radius: 12px; border: 1px solid var(--border-gray); }
+        .billing-btn { flex: 1; padding: 8px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; color: var(--text-gray); transition: 0.2s; }
+        .billing-btn.active { background: var(--border-gray); color: #fff; }
+
+        /* كروت خطط الأسعار المتطورة */
+        .plan-selector-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .plan-card-option { background: var(--bg-input); border: 1px solid var(--border-gray); padding: 12px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s; }
+        .plan-card-option.active { border-color: var(--pi-orange); background: rgba(252, 163, 17, 0.05); }
+        .plan-price { font-size: 18px; font-weight: bold; color: var(--pi-orange); margin: 5px 0; }
+        .plan-saving { font-size: 10px; color: var(--success); font-weight: bold; display: block; margin-top: 2px; }
 
         /* بوابات الدفع */
         .pay-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-gray); padding-bottom: 10px; }
@@ -94,50 +110,69 @@
 </head>
 <body>
 
-    <!-- بوابات التحقق ومنع الحسابات المتعددة الإجبارية -->
+    <!-- بوابات التحقق للأفراد والشركات -->
     <div class="auth-overlay" id="auth-screen">
         <div class="auth-box">
-            <div style="text-align:center; margin-bottom: 20px;">
+            <div style="text-align:center; margin-bottom: 15px;">
                 <div class="auth-title"><i data-lucide="shield-check" style="color:var(--pi-orange); vertical-align:middle; width:28px; height:28px;"></i> Pi<span>Grok</span> AI</div>
-                <p style="font-size:12px; color:var(--text-gray); margin-top:5px;">بوابة توثيق الهوية الحقيقية ومنع المزارع والحسابات الوهمية</p>
+                <p style="font-size:12px; color:var(--text-gray); margin-top:5px;">اختر نوع الحساب الموثق للبدء والمنع الصارم للتكرار</p>
+            </div>
+            
+            <div class="account-type-tabs">
+                <div class="acc-type-btn active" id="type-individual" onclick="setAccountType('individual')"><i data-lucide="user"></i> حساب فردي (Super Grok)</div>
+                <div class="acc-type-btn" id="type-company" onclick="setAccountType('company')"><i data-lucide="building-2"></i> حساب شركة / عمل</div>
             </div>
             
             <form id="registerForm" onsubmit="handleRegistration(event)">
-                <div style="margin-bottom: 12px;">
-                    <label><i data-lucide="user" style="width:14px; height:14px; vertical-align:middle;"></i> الاسم الكامل الحقيقي (المطابق للهوية)</label>
+                <div style="margin-bottom: 10px;">
+                    <label id="name-label"><i data-lucide="user" style="width:13px; height:13px; vertical-align:middle;"></i> الاسم الكامل الحقيقي للمشرف</label>
                     <input type="text" id="auth-name" placeholder="مثال: محمد العلمي" required>
                 </div>
+
+                <div style="margin-bottom: 10px; display:none;" id="company-fields">
+                    <div style="margin-bottom: 10px;">
+                        <label><i data-lucide="briefcase" style="width:13px; height:13px; vertical-align:middle;"></i> اسم الشركة / المؤسسة الرسمي</label>
+                        <input type="text" id="auth-company-name" placeholder="مثال: شركة تيك الرقمية">
+                    </div>
+                    <div>
+                        <label><i data-lucide="users" style="width:13px; height:13px; vertical-align:middle;"></i> عدد أفراد فريق العمل المتوقع</label>
+                        <select id="auth-team-size">
+                            <option value="2-10">من 2 إلى 10 موظفين</option>
+                            <option value="11-50">من 11 إلى 50 موظف</option>
+                            <option value="50+">أكثر من 50 موظف</option>
+                        </select>
+                    </div>
+                </div>
                 
-                <div style="margin-bottom: 12px;">
-                    <label><i data-lucide="mail" style="width:14px; height:14px; vertical-align:middle;"></i> البريد الإلكتروني الرسمي للعمل</label>
+                <div style="margin-bottom: 10px;">
+                    <label><i data-lucide="mail" style="width:13px; height:13px; vertical-align:middle;"></i> البريد الإلكتروني للعمل</label>
                     <input type="email" id="auth-email" placeholder="name@company.com" required>
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <label><i data-lucide="hash" style="width:14px; height:14px; vertical-align:middle;"></i> رقم الهاتف / الحساب الموثق والمسجل في Pi</label>
-                    <input type="text" id="auth-pi-username" placeholder="مثال: @pi_user_100 أو رقم الهاتف الدولي" required>
+                <div style="margin-bottom: 12px;">
+                    <label><i data-lucide="hash" style="width:13px; height:13px; vertical-align:middle;"></i> رقم الهاتف الدولي أو الحساب الموثق فالباي (Pi)</label>
+                    <input type="text" id="auth-pi-username" placeholder="مثال: @pi_user_secure" required>
                 </div>
 
-                <!-- الإقرار القانوني الإجباري للتسجيل بالمسؤولية الفكرية وعدم الاسترداد -->
                 <div class="legal-checkbox-container">
                     <input type="checkbox" id="legal-agree" required>
                     <label for="legal-agree">
-                        أوافق وأقر قانونياً بأنني <strong>المسؤول الوحيد شخصياً وفكرياً</strong> عن أي محتوى أو صورة يتم توليدها، وأنني اطلعت على <strong>سياسة رد الأموال</strong> وأعلم أنه لا يمكن استرجاع أية أموال نهائياً.
+                        أوافق وأقر قانونياً (بصفتي فرداً أو ممثلاً للشركة) بأننا <strong>المسؤول الوحيد شخصياً وفكرياً</strong> عن أي محتوى أو صورة يتم توليدها، ونوافق على أنه <strong>لا يمكن استرجاع أية أموال نهائياً</strong>.
                     </label>
                 </div>
 
-                <button type="submit" class="pi-btn pi-btn-orange" style="margin-top: 5px;"><i data-lucide="user-plus"></i> إنشاء الحساب وتوثيق الجهاز</button>
+                <button type="submit" class="pi-btn pi-btn-orange"><i data-lucide="check-circle"></i> إنشاء الحساب وتوثيق النظام</button>
             </form>
         </div>
     </div>
 
-    <!-- التطبيق الرئيسي (مخفي حتى يتم التسجيل بنجاح) -->
+    <!-- التطبيق الرئيسي -->
     <div class="pi-header">
         <div class="pi-logo"><i data-lucide="sparkles" style="color:var(--pi-orange)"></i> Pi<span>Grok</span> AI</div>
         <div class="pi-nav">
-            <div class="trial-badge" id="trialStatus">⏳ تجربة مجانية مفعلة للعضو الموثق</div>
+            <div class="trial-badge" id="trialStatus">⏳ نوع الحساب: موثق جاري التحديد</div>
             <button class="pi-btn pi-btn-gray" onclick="showSection('admin')"><i data-lucide="sliders"></i> الأدمن</button>
-            <button class="pi-btn pi-btn-orange" onclick="openPaymentModal()"><i data-lucide="credit-card"></i> تفعيل Pro</button>
+            <button class="pi-btn pi-btn-orange" onclick="openPaymentModal()"><i data-lucide="credit-card"></i> شحن / تفعيل</button>
         </div>
     </div>
 
@@ -154,10 +189,7 @@
             </div>
             <div class="ask-footer-controls">
                 <div class="grok-input-wrapper">
-                    <textarea class="grok-textarea" rows="1" placeholder="اسأل غروك كمسؤول موثق..."></textarea>
-                    <div class="grok-input-actions">
-                        <div class="action-right"><i data-lucide="zap" style="width:14px; height:14px;"></i> سريع</div>
-                    </div>
+                    <textarea class="grok-textarea" rows="1" placeholder="اسأل غروك كعضو موثق ومحمي قانونياً..."></textarea>
                 </div>
             </div>
         </div>
@@ -169,38 +201,59 @@
 
         <!-- لوحة الأدمن -->
         <div id="section-admin" class="section-admin">
-            <h3>لوحة تحكم النظام</h3>
+            <h3>لوحة إدارة الأنظمة</h3>
             <div><label>مفتاح xAI API (Grok)</label><input type="password" value="xai-grok-live-secure-key-2026"></div>
-            <div><label>عنوان استلام USDT</label><input type="text" value="TYv8JdfKsz92NmxPqW71zAsKdf8H11xxLL"></div>
-            <button class="pi-btn pi-btn-orange" style="margin-top:20px;">حفظ التعديلات</button>
+            <div><label>عنوان استلام USDT (TRC-20)</label><input type="text" value="TYv8JdfKsz92NmxPqW71zAsKdf8H11xxLL"></div>
+            <button class="pi-btn pi-btn-orange" style="margin-top:20px;">حفظ وتثبيت البيانات</button>
         </div>
     </div>
 
-    <!-- نافذة بوابات الدفع -->
+    <!-- نافذة بوابات الدفع مع خيارات الأسعار الجديدة والفوترة الدورية -->
     <div class="modal-overlay" id="payment-modal">
         <div class="modal-box">
             <button class="close-modal" onclick="closePaymentModal()">X</button>
-            <h3 style="margin-bottom:10px; color:var(--pi-orange); text-align:center;">بوابة الدفع الموثقة</h3>
+            <h3 style="margin-bottom:15px; color:var(--pi-orange); text-align:center;">بوابة الفوترة وتنشيط الرخص</h3>
+            
+            <!-- زر التبديل بين الدورة الشهرية والسنوية -->
+            <div class="billing-toggle-container">
+                <div class="billing-btn active" id="billing-monthly" onclick="setBillingCycle('monthly')">فوترة شهرية</div>
+                <div class="billing-btn" id="billing-yearly" onclick="setBillingCycle('yearly')">فوترة سنوية (توفير شهرين 🎁)</div>
+            </div>
+
+            <p style="font-size:12px; color:var(--text-gray); margin-bottom:10px; text-align:center;">اختر نوع الترخيص المراد تفعيله:</p>
+            <div class="plan-selector-container">
+                <div class="plan-card-option active" id="plan-ind" onclick="selectPlan('ind')">
+                    <strong style="font-size:13px;">حساب فردي Super Grok</strong>
+                    <div class="plan-price" id="price-ind-text">$20 <span style="font-size:10px; color:var(--text-gray);">/ شهر</span></div>
+                </div>
+                <div class="plan-card-option" id="plan-corp" onclick="selectPlan('corp')">
+                    <strong style="font-size:13px;">حساب شركة Enterprise</strong>
+                    <div class="plan-price" id="price-corp-text">$200 <span style="font-size:10px; color:var(--text-gray);">/ شهر</span></div>
+                </div>
+            </div>
+
             <div class="pay-tabs">
                 <button class="pay-tab-btn active" onclick="switchPayMethod('pay-store')">Store Pay</button>
                 <button class="pay-tab-btn" onclick="switchPayMethod('pay-visa')">Visa</button>
                 <button class="pay-tab-btn" onclick="switchPayMethod('pay-crypto')">USDT</button>
             </div>
+
             <div id="pay-store" class="pay-method-content active">
-                <button class="pi-btn pi-btn-orange" style="background:#fff; color:#000;" onclick="executePayment('Store Pay')">تأكيد الدفع المباشر عبر المتجر</button>
+                <button class="pi-btn pi-btn-orange" style="background:#fff; color:#000;" onclick="executePayment('Store Pay')">تأكيد الدفع والربط مع المتاجر</button>
             </div>
             <div id="pay-visa" class="pay-method-content">
                 <input type="text" placeholder="رقم بطاقة الفيزا">
-                <button class="pi-btn pi-btn-orange" onclick="executePayment('Visa')">ادفع الآن بـ $9.99</button>
+                <button class="pi-btn pi-btn-orange" onclick="executePayment('Visa')">إتمام الشراء الآمن للرخصة</button>
             </div>
             <div id="pay-crypto" class="pay-method-content">
-                <p style="font-size:13px; color:var(--text-gray);">حول 10 USDT إلى شبكة TRC-20:</p>
+                <p style="font-size:13px; color:var(--text-gray);" id="crypto-amount-text">المبلغ المطلوب: 20 USDT لشبكة TRC-20:</p>
                 <div style="background:var(--bg-input); padding:12px; border-radius:10px; text-align:center;"><code style="color:#fff;">TYv8JdfKsz92NmxPqW71zAsKdf8H11xxLL</code></div>
-                <button class="pi-btn" style="background:var(--usdt-green); color:#fff;" onclick="executePayment('USDT')">نسخ والتحقق من الشبكة</button>
+                <button class="pi-btn" style="background:var(--usdt-green); color:#fff;" onclick="executePayment('USDT')">نسخ العنوان والتحقق</button>
             </div>
+
             <div class="legal-notice-box">
                 <i data-lucide="alert-triangle" style="width:16px; height:16px; color:var(--danger); flex-shrink:0;"></i>
-                <div><strong>تنبيه الدفع النهائي:</strong> المدفوعات غير قابلة للاسترداد نهائياً بسبب استهلاك الحوسبة الحية.</div>
+                <div><strong>إخلاء مالي نهائي:</strong> الفوترة وتنشيط التراخيص (سواء الفردية أو باقات الشركات) نهائية وفورية. <strong>لا يمكن استرجاع أية أموال نهائياً</strong> بمجرد الاستهلاك الحوسبي.</div>
             </div>
         </div>
     </div>
@@ -215,22 +268,83 @@
     </div>
 
     <footer>
-        <p>© 2026 PiGrok AI. جميع الحقوق محفوظة.</p>
+        <p>© 2026 PiGrok AI. جميع الحقوق محفوظة ومحمية قانونياً للأفراد والشركات.</p>
         <div class="footer-links">
             <a onclick="showLegalContent('privacy')">سياسة الخصوصية لسياسة القانون</a>
-            <a onclick="showLegalContent('terms')">الشروط والأحكام والمسؤولية</a>
+            <a onclick="showLegalContent('terms')">الشروط والأحكام والمسؤولية الفكرية</a>
         </div>
     </footer>
 
     <script>
         lucide.createIcons();
 
-        // فحص بصمة الجهاز والمنع الصارم للحسابات المتعددة فور التحميل
+        let currentSelectedAccountType = 'individual';
+        let currentSelectedPlan = 'ind';
+        let currentBillingCycle = 'monthly';
+
+        // خريطة الأسعار المحدثة بدقة حسب طلبك
+        const pricingTable = {
+            monthly: { ind: 20, corp: 200 },
+            yearly: { ind: 200, corp: 2000 }
+        };
+
         window.onload = function() {
             if (localStorage.getItem('pigrok_user_authenticated') === 'true') {
                 document.getElementById('auth-screen').style.display = 'none';
+                updateBadgeStatus();
             }
         };
+
+        function setAccountType(type) {
+            currentSelectedAccountType = type;
+            document.getElementById('type-individual').classList.remove('active');
+            document.getElementById('type-company').classList.remove('active');
+            
+            if(type === 'individual') {
+                document.getElementById('type-individual').classList.add('active');
+                document.getElementById('company-fields').style.display = 'none';
+                document.getElementById('name-label').innerHTML = "<i data-lucide='user' style='width:13px; height:13px; vertical-align:middle;'></i> الاسم الكامل الحقيقي للمشرف";
+                selectPlan('ind');
+            } else {
+                document.getElementById('type-company').classList.add('active');
+                document.getElementById('company-fields').style.display = 'block';
+                document.getElementById('name-label').innerHTML = "<i data-lucide='user' style='width:13px; height:13px; vertical-align:middle;'></i> اسم ممثل الشركة / المدير المفوض";
+                selectPlan('corp');
+            }
+            lucide.createIcons();
+        }
+
+        function setBillingCycle(cycle) {
+            currentBillingCycle = cycle;
+            document.getElementById('billing-monthly').classList.remove('active');
+            document.getElementById('billing-yearly').classList.remove('active');
+            document.getElementById(`billing-${cycle}`).classList.add('active');
+
+            // تحديث نصوص الأسعار في كروت الاختيار
+            if(cycle === 'monthly') {
+                document.getElementById('price-ind-text').innerHTML = `$20 <span style="font-size:10px; color:var(--text-gray);">/ شهر</span>`;
+                document.getElementById('price-corp-text').innerHTML = `$200 <span style="font-size:10px; color:var(--text-gray);">/ شهر</span>`;
+            } else {
+                document.getElementById('price-ind-text').innerHTML = `$200 <span style="font-size:10px; color:var(--text-gray);">/ سنة</span><span class="plan-saving">توفير $40</span>`;
+                document.getElementById('price-corp-text').innerHTML = `$2000 <span style="font-size:10px; color:var(--text-gray);">/ سنة</span><span class="plan-saving">توفير $400</span>`;
+            }
+
+            // تحديث قيمة الـ USDT المطلوبة بناءً على الاختيار الحالي
+            selectPlan(currentSelectedPlan);
+        }
+
+        function selectPlan(plan) {
+            currentSelectedPlan = plan;
+            document.getElementById('plan-ind').classList.remove('active');
+            document.getElementById('plan-corp').classList.remove('active');
+            document.getElementById(`plan-${plan}`).classList.add('active');
+
+            const cryptoText = document.getElementById('crypto-amount-text');
+            const amount = pricingTable[currentBillingCycle][plan];
+            const unit = currentBillingCycle === 'monthly' ? 'شهرياً' : 'سنوياً';
+            
+            cryptoText.innerText = `المبلغ المطلوب: ${amount} USDT لشبكة TRC-20 (اشتراك ${unit}):`;
+        }
 
         function handleRegistration(event) {
             event.preventDefault();
@@ -239,21 +353,34 @@
             const email = document.getElementById('auth-email').value.trim();
             const piUser = document.getElementById('auth-pi-username').value.trim();
 
-            // خوارزمية فحص الحسابات المتعددة محلياً على الجهاز لحظر التكرار
             if (localStorage.getItem('pigrok_device_fingerprint') === 'registered_device_active') {
-                alert("❌ حظر أمني: تم اكتشاف أن هذا الجهاز مسجل به حساب آخر بالفعل! يُمنع إنشاء حسابين نهائياً طبقاً لسياسات المنصة ومكافحة الحسابات الوهمية.");
+                alert("❌ حظر أمني: تم اكتشاف حساب آخر مسجل على هذا الجهاز! يمنع تكرار الحسابات نهائياً لحماية النظام.");
                 return;
             }
 
-            // محاكاة حفظ البيانات الموثقة بنجاح وحظر الجهاز من التسجيل مجدداً
             localStorage.setItem('pigrok_user_authenticated', 'true');
             localStorage.setItem('pigrok_device_fingerprint', 'registered_device_active');
+            localStorage.setItem('pigrok_account_mode', currentSelectedAccountType);
             localStorage.setItem('pigrok_user_name', name);
             localStorage.setItem('pigrok_user_email', email);
-            localStorage.setItem('pigrok_user_pi', piUser);
 
-            alert(`✅ تم توثيق الهوية بنجاح!\nالعضو: ${name}\nالحساب مربوط بالبريد ورقم Pi لمنع التكرار.`);
+            alert(`✅ تم التوثيق بنجاح!\nنوع الحساب المفعّل: [${currentSelectedAccountType === 'individual' ? 'حساب فردي Super Grok' : 'حساب شركة Enterprise'}]`);
             document.getElementById('auth-screen').style.display = 'none';
+            updateBadgeStatus();
+        }
+
+        function updateBadgeStatus() {
+            const mode = localStorage.getItem('pigrok_account_mode') || 'individual';
+            const badge = document.getElementById('trialStatus');
+            if(mode === 'individual') {
+                badge.innerHTML = "👤 باقة: الفردي (Super Grok)";
+                badge.style.color = "var(--pi-orange)";
+                badge.style.borderColor = "var(--pi-orange)";
+            } else {
+                badge.innerHTML = "🏢 باقة: الشركات (Enterprise Active)";
+                badge.style.color = "var(--success)";
+                badge.style.borderColor = "var(--success)";
+            }
         }
 
         function openPaymentModal() { document.getElementById('payment-modal').style.display = 'flex'; }
@@ -268,20 +395,30 @@
         }
 
         function executePayment(name) {
-            alert(`⚠️ المعاملة نهائية: لا يمكن استرجاع أية أموال نهائياً.\nتم التفعيل الفوري لحساب Pro.`);
+            const amount = pricingTable[currentBillingCycle][currentSelectedPlan];
+            const cycleText = currentBillingCycle === 'monthly' ? 'شهري' : 'سنوي';
+            const planText = currentSelectedPlan === 'ind' ? 'Super Grok الفردي' : 'الشركات Enterprise';
+
+            alert(`⚠️ إشعار الفوترة النهائي: ترخيص [${planText}] بقيمة $${amount} (اشتراك ${cycleText}) تم تنشيطه بنجاح.\nلا يمكن استرجاع أية أموال نهائياً بموجب سياسة الاستهلاك الفوري للبيانات حية.`);
             closePaymentModal();
-            document.getElementById('trialStatus').innerHTML = "✅ حساب مفعّل Pro (نهائي)";
+            
+            if(currentSelectedPlan === 'corp') {
+                localStorage.setItem('pigrok_account_mode', 'company');
+            } else {
+                localStorage.setItem('pigrok_account_mode', 'individual');
+            }
+            updateBadgeStatus();
         }
 
         function showLegalContent(type) {
             const title = document.getElementById('legal-modal-title');
             const body = document.getElementById('legal-modal-body');
             if (type === 'privacy') {
-                title.innerText = "سياسة الخصوصية لسياسة القانون الدولي";
-                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>تلتزم منصة PiGrok AI بحماية بيانات المستخدمين الموثقين. جميع المدفوعات والاشتراكات نهائية بالكامل وغير قابلة للإلغاء. لا يمكن استرجاع أية أموال نهائياً تحت أي ظرف من الظروف نظراً للتكاليف الفورية لخوادم الذكاء الاصطناعي السحابية الحية.</p>`;
+                title.innerText = "سياسة الخصوصية لسياسة القانون الدولي للأفراد والشركات";
+                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>تلتزم منصة PiGrok AI بحماية خصوصية بيانات الأفراد والشركات والمؤسسات بالكامل. جميع عمليات الشراء وتنشيط الرخص والاشتراكات نهائية بالكامل وغير قابلة للإلغاء. لا يمكن استرجاع أية أموال نهائياً نظراً للتكاليف الفورية لمعالجة البيانات الضخمة وحوسبة خوادم غروك السحابية الحية.</p>`;
             } else if (type === 'terms') {
-                title.innerText = "الشروط والأحكام والمسؤولية الفكرية";
-                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>بموجب هذه الاتفاقية الصارمة، فإن أي مستخدم يستخدم خدماتنا، فإنه يعتبر المسؤول الأول والأخير والوحيد قانونياً وجنائياً وفكرياً عن أي محتوى نصي أو أي صورة يتم إنتاجها أو رفعها عبر المنصة كملكية فردية وفكرية وشخصية له، وتُخلي الإدارة مسؤوليتها تماماً من أي انتهاك.</p>`;
+                title.innerText = "الشروط والأحكام والمسؤولية الفكرية والفردية";
+                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>بموجب هذه الاتفاقية الصارمة، فإن أي مستخدم (سواء كان مستخدماً فردياً لحساب Super Grok أو شركة مفوضة تحت باقة Enterprise) يعتبر هو المسؤول الأول والأخير والوحيد قانونياً وجنائياً وفكرياً عن أي محتوى نصي أو أي صورة يتم إنتاجها أو تداولها عبر المنصة كملكية فردية وفكرية وشخصية محصورة فيه، وتُخلي إدارة المنصة مسؤوليتها الكاملة والتامة من أي خرق للقوانين الدولية.</p>`;
             }
             toggleLegalModal(true);
         }
