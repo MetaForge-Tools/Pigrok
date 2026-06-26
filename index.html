@@ -2,106 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PiGrok AI</title>
-    <!-- تضمين مكتبة Tailwind CSS للتنسيق السريع والدقيق -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- تضمين أيقونات FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>PiGrok App</title>
     <style>
-        body {
-            background-color: #0B0B0B;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-        /* إخفاء شريط التمرير للأزرار السريعة */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: sans-serif; background: #0f0f0f; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 20px; text-align: center; border-bottom: 1px solid #333; }
+        #chat-box { flex: 1; padding: 20px; overflow-y: auto; }
+        #input-area { padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; background: #0084ff; border: none; color: white; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
-<body class="text-white flex flex-col h-screen overflow-hidden">
+<body>
+    <header>PiGrok Interface</header>
+    <div id="chat-box"></div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="سول PiGrok...">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
 
-    <!-- شريط القيادة العلوي (Header) -->
-    <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-900">
-        <button class="text-white text-xl p-1"><i class="fa-solid fa-bars"></i></button>
-        
-        <div class="flex items-center gap-6">
-            <span class="text-zinc-500 font-bold text-sm cursor-pointer">تخيل</span>
-            <div class="flex flex-col items-center">
-                <span class="text-white font-bold text-sm cursor-pointer">اسأل</span>
-                <div class="h-[2px] w-6 bg-white mt-1"></div>
-            </div>
-        </div>
-
-        <button class="text-white text-xl p-1"><i class="fa-solid fa-table-cells-large"></i></button>
-    </header>
-
-    <!-- المنطقة المركزية (الشعار) -->
-    <main class="flex-1 flex items-center justify-center relative p-4">
-        <div class="opacity-15 w-40 h-40 flex items-center justify-center">
-            <!-- شعار دائري افتراضي يحاكي الهوية -->
-            <i class="fa-solid fa-circle-nodes text-[120px] text-white"></i>
-        </div>
-    </main>
-
-    <!-- الجزء السفلي: الأزرار وصندوق الكتابة -->
-    <footer class="w-full max-w-3xl mx-auto px-4 pb-6 space-y-4">
-        
-        <!-- أشرطة الاختيارات السريعة القابلة للسحب أفقياً -->
-        <div class="flex gap-2 overflow-x-auto no-scrollbar py-1 text-sm whitespace-nowrap">
-            <!-- زر سوبرغروك الأزرق المتميز -->
-            <button class="bg-[#0056B3] hover:bg-blue-700 text-white px-4 py-1.5 rounded-full flex items-center gap-2 font-medium">
-                <i class="fa-solid fa-bolt text-xs"></i> عرض سوبرغروك
-            </button>
-            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
-                <i class="fa-solid fa-link text-xs text-zinc-400"></i> جرب الروابط
-            </button>
-            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
-                <i class="fa-solid fa-video text-xs text-zinc-400"></i> إنشاء مقاطع فيديو
-            </button>
-            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
-                <i class="fa-solid fa-image text-xs text-zinc-400"></i> تعديل صورة
-            </button>
-            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
-                <i class="fa-solid fa-microphone text-xs text-zinc-400"></i> وضع الصوت
-            </button>
-            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
-                <i class="fa-solid fa-camera text-xs text-zinc-400"></i> فتح الكاميرا
-            </button>
-        </div>
-
-        <!-- صندوق الإدخال الذكي المدمج -->
-        <div class="bg-[#161616] border border-zinc-800 rounded-3xl p-2 flex flex-col justify-between min-h-[110px]">
-            <!-- حقل النص -->
-            <textarea 
-                class="bg-transparent w-full resize-none text-white placeholder-zinc-500 focus:outline-none p-2 text-[15px]" 
-                rows="2" 
-                placeholder="اسأل عن أي شيء..."></textarea>
-            
-            <!-- أزرار التحكم السفلية داخل الصندوق -->
-            <div class="flex items-center justify-between pt-2 px-2">
-                <!-- اليمين: أزرار الصوت والتحدث -->
-                <div class="flex items-center gap-3">
-                    <button class="bg-white text-black font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-zinc-200">
-                        <i class="fa-solid fa-volume-high text-[10px]"></i> تكلم
-                    </button>
-                    <button class="text-zinc-400 hover:text-white text-lg"><i class="fa-regular fa-microphone"></i></button>
-                </div>
-
-                <!-- اليسار: أزرار تخصيص السرعة والإضافة -->
-                <div class="flex items-center gap-2">
-                    <div class="bg-[#222222] border border-zinc-800 px-2.5 py-1 rounded-xl flex items-center gap-1.5 cursor-pointer text-xs text-zinc-300 hover:bg-zinc-800">
-                        <i class="fa-solid fa-chevron-down text-[10px] text-zinc-400"></i>
-                        <span>سريع</span>
-                        <i class="fa-solid fa-bolt text-zinc-400 text-[11px]"></i>
-                    </div>
-                    <button class="bg-[#222222] border border-zinc-800 w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:bg-zinc-800">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-    </footer>
-
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chat-box');
+            if (input.value.trim() !== "") {
+                chatBox.innerHTML += `<p><b>أنت:</b> ${input.value}</p>`;
+                // هنا غادي نربطو مستقبلاً بالـ API
+                chatBox.innerHTML += `<p><b>PiGrok:</b> قيد التطوير...</p>`;
+                input.value = "";
+            }
+        }
+    </script>
 </body>
 </html>
