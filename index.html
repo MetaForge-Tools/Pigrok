@@ -1,262 +1,107 @@
-import 'package:flutter/material.dart';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiGrok AI</title>
+    <!-- تضمين مكتبة Tailwind CSS للتنسيق السريع والدقيق -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تضمين أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0B0B0B;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        /* إخفاء شريط التمرير للأزرار السريعة */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-white flex flex-col h-screen overflow-hidden">
 
-void main() {
-  runApp(const PiGrokApp());
-}
+    <!-- شريط القيادة العلوي (Header) -->
+    <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-900">
+        <button class="text-white text-xl p-1"><i class="fa-solid fa-bars"></i></button>
+        
+        <div class="flex items-center gap-6">
+            <span class="text-zinc-500 font-bold text-sm cursor-pointer">تخيل</span>
+            <div class="flex flex-col items-center">
+                <span class="text-white font-bold text-sm cursor-pointer">اسأل</span>
+                <div class="h-[2px] w-6 bg-white mt-1"></div>
+            </div>
+        </div>
 
-class PiGrokApp extends StatelessWidget {
-  const PiGrokApp({Key? key}) : super(key: key);
+        <button class="text-white text-xl p-1"><i class="fa-solid fa-table-cells-large"></i></button>
+    </header>
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PiGrok AI',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0B0B0B), // الخلفية الداكنة الأصلية
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0B0B0B),
-          elevation: 0,
-        ),
-      ),
-      // لتدعيم واجهة اللغة العربية من اليمين إلى اليسار
-      localizationsDelegates: const [
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('ar', 'MA'), 
-      ],
-      locale: const Locale('ar', 'MA'),
-      home: const HomeScreen(),
-    );
-  }
-}
+    <!-- المنطقة المركزية (الشعار) -->
+    <main class="flex-1 flex items-center justify-center relative p-4">
+        <div class="opacity-15 w-40 h-40 flex items-center justify-center">
+            <!-- شعار دائري افتراضي يحاكي الهوية -->
+            <i class="fa-solid fa-circle-nodes text-[120px] text-white"></i>
+        </div>
+    </main>
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+    <!-- الجزء السفلي: الأزرار وصندوق الكتابة -->
+    <footer class="w-full max-w-3xl mx-auto px-4 pb-6 space-y-4">
+        
+        <!-- أشرطة الاختيارات السريعة القابلة للسحب أفقياً -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar py-1 text-sm whitespace-nowrap">
+            <!-- زر سوبرغروك الأزرق المتميز -->
+            <button class="bg-[#0056B3] hover:bg-blue-700 text-white px-4 py-1.5 rounded-full flex items-center gap-2 font-medium">
+                <i class="fa-solid fa-bolt text-xs"></i> عرض سوبرغروك
+            </button>
+            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-link text-xs text-zinc-400"></i> جرب الروابط
+            </button>
+            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-video text-xs text-zinc-400"></i> إنشاء مقاطع فيديو
+            </button>
+            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-image text-xs text-zinc-400"></i> تعديل صورة
+            </button>
+            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-microphone text-xs text-zinc-400"></i> وضع الصوت
+            </button>
+            <button class="bg-[#1E1E1E] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-4 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-camera text-xs text-zinc-400"></i> فتح الكاميرا
+            </button>
+        </div>
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
+        <!-- صندوق الإدخال الذكي المدمج -->
+        <div class="bg-[#161616] border border-zinc-800 rounded-3xl p-2 flex flex-col justify-between min-h-[110px]">
+            <!-- حقل النص -->
+            <textarea 
+                class="bg-transparent w-full resize-none text-white placeholder-zinc-500 focus:outline-none p-2 text-[15px]" 
+                rows="2" 
+                placeholder="اسأل عن أي شيء..."></textarea>
+            
+            <!-- أزرار التحكم السفلية داخل الصندوق -->
+            <div class="flex items-center justify-between pt-2 px-2">
+                <!-- اليمين: أزرار الصوت والتحدث -->
+                <div class="flex items-center gap-3">
+                    <button class="bg-white text-black font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1 hover:bg-zinc-200">
+                        <i class="fa-solid fa-volume-high text-[10px]"></i> تكلم
+                    </button>
+                    <button class="text-zinc-400 hover:text-white text-lg"><i class="fa-regular fa-microphone"></i></button>
+                </div>
 
-class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _chatController = TextEditingController();
+                <!-- اليسار: أزرار تخصيص السرعة والإضافة -->
+                <div class="flex items-center gap-2">
+                    <div class="bg-[#222222] border border-zinc-800 px-2.5 py-1 rounded-xl flex items-center gap-1.5 cursor-pointer text-xs text-zinc-300 hover:bg-zinc-800">
+                        <i class="fa-solid fa-chevron-down text-[10px] text-zinc-400"></i>
+                        <span>سريع</span>
+                        <i class="fa-solid fa-bolt text-zinc-400 text-[11px]"></i>
+                    </div>
+                    <button class="bg-[#222222] border border-zinc-800 w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:bg-zinc-800">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-  // قائمة الخيارات السريعة المأخوذة من لقطات الشاشة بالتطابق
-  final List<Map<String, dynamic>> _quickOptions = [
-    {'text': 'عرض سوبرغروك', 'icon': Icons.bolt, 'isBlue': true},
-    {'text': 'جرب الروابط', 'icon': Icons.link, 'isBlue': false},
-    {'text': 'إنشاء مقاطع فيديو', 'icon': Icons.video_collection, 'isBlue': false},
-    {'text': 'تعديل صورة', 'icon': Icons.image, 'isBlue': false},
-    {'text': 'وضع الصوت', 'icon': Icons.mic, 'isBlue': false},
-    {'text': 'فتح الكاميرا', 'icon': Icons.camera_alt, 'isBlue': false},
-    {'text': 'تحليل المستندات', 'icon': Icons.description, 'isBlue': false},
-    {'text': 'تخصيص Grok', 'icon': Icons.tune, 'isBlue': false},
-  ];
+    </footer>
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const Drawer(), // القائمة الجانبية لسجل المحادثات
-      appBar: AppBar(
-        centerTitle: true,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'تخيل',
-              style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(width: 20),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'اسأل',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  height: 2,
-                  width: 30,
-                  color: Colors.white,
-                )
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // الشعار المركزي في وسط الشاشة
-            Expanded(
-              child: Center(
-                child: Opacity(
-                  opacity: 0.15,
-                  child: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/X_logo_2023.svg/640px-X_logo_2023.svg.png', 
-                    width: 180,
-                    height: 180,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.blur_circular_rounded,
-                      size: 150,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // شريط الخيارات السريعة الأفقي (قابل للسحب)
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: SizedBox(
-                height: 45,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _quickOptions.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemBuilder: (context, index) {
-                    final option = _quickOptions[index];
-                    final isBlue = option['isBlue'] as bool;
-                    return Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: Icon(
-                          option['icon'],
-                          size: 16,
-                          color: isBlue ? Colors.white : Colors.grey[300],
-                        ),
-                        label: Text(
-                          option['text'],
-                          style: TextStyle(
-                            color: isBlue ? Colors.white : Colors.grey[300],
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isBlue ? const Color(0xFF0056B3) : const Color(0xFF1E1E1E),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(
-                              color: isBlue ? Colors.transparent : Colors.grey[800]!,
-                              width: 0.5,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                          elevation: 0,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // صندوق الإدخال السفلي الذكي مع الأزرار الداخلية
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF161616),
-                    borderRadius: BorderRadius.circular(28),
-                    border: BorderSide(color: Colors.grey[800]!, width: 0.8),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: TextField(
-                          controller: _chatController,
-                          maxLines: null,
-                          style: const TextStyle(color: Colors.white, fontSize: 15),
-                          decoration: const InputDecoration(
-                            hintText: 'اسأل عن أي شيء...',
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                        child: Row(
-                          children: [
-                            // زر التحدث والمايكروفون المدمج
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.volume_up, color: Colors.black, size: 16),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'تكلم',
-                                    style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.mic_none_rounded, color: Colors.grey[500], size: 22),
-                            const Spacer(),
-                            
-                            // زر تحديد وضع السرعة والـ +
-                            Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF222222),
-                                borderRadius: BorderRadius.circular(16),
-                                border: BorderSide(color: Colors.grey[800]!, width: 0.5),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.expand_more, color: Colors.grey[400], size: 16),
-                                  const SizedBox(width: 4),
-                                  const Text('سريع', style: TextStyle(color: Colors.white, fontSize: 12)),
-                                  const SizedBox(width: 4),
-                                  Icon(Icons.flash_on, color: Colors.grey[400], size: 14),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF222222),
-                                shape: BoxShape.circle,
-                                border: BorderSide(color: Colors.grey[800]!, width: 0.5),
-                              ),
-                              child: Icon(Icons.add, color: Colors.grey[400], size: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+</body>
+</html>
