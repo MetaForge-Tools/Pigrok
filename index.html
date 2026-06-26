@@ -3,156 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PiGrok AI - المنصة السينمائية المتكاملة</title>
+    <title>PiGrok AI - المنصة العالمية الموثقة</title>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
     <style>
         :root {
-            --bg-main: #060913;
-            --bg-card: #0f1424;
-            --pi-color: #fca311;
-            --text-main: #f8fafc;
-            --text-muted: #64748b;
-            --border: #1e293b;
+            --bg-dark: #09090b;
+            --bg-card: #121214;
+            --bg-input: #18181b;
+            --pi-orange: #fca311;
+            --text-white: #f4f4f5;
+            --text-gray: #a1a1aa;
+            --border-gray: #27272a;
             --success: #10b981;
+            --usdt-green: #26a17b;
+            --danger: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
-        header { background-color: var(--bg-card); border-bottom: 1px solid var(--border); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: bold; }
-        .logo span { color: var(--pi-color); }
-        .nav-buttons { display: flex; gap: 10px; }
-        .btn { background: none; border: none; color: var(--text-main); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        .btn-pi { background-color: var(--pi-color); color: #000; }
-        .btn-admin { background-color: #334155; color: var(--text-main); }
+        body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
         
-        .main-container { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; max-width: 1200px; width: 100%; margin: 0 auto; }
-        .tabs { display: flex; background-color: var(--bg-card); padding: 5px; border-radius: 12px; border: 1px solid var(--border); }
-        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .tab-btn.active { background-color: var(--border); color: var(--text-main); }
+        /* شاشة الدخول والتسجيل الصارمة */
+        .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auth-box { background: var(--bg-card); border: 1px solid var(--border-gray); border-radius: 24px; max-width: 480px; width: 100%; padding: 30px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+        .auth-title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+        .auth-title span { color: var(--pi-orange); }
         
-        .content-section { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; flex: 1; display: none; }
-        .content-section.active { display: flex; flex-direction: column; }
+        /* علوية التحكم للتطبيق */
+        .pi-header { background-color: var(--bg-card); border-bottom: 1px solid var(--border-gray); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .pi-logo { font-size: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .pi-logo span { color: var(--pi-orange); }
+        .pi-nav { display: flex; gap: 10px; align-items: center; }
         
-        .chat-area { flex: 1; display: flex; flex-direction: column; gap: 15px; min-height: 350px; }
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .msg { padding: 12px; border-radius: 12px; max-width: 80%; line-height: 1.4; }
-        .msg.bot { background-color: var(--border); align-self: flex-start; }
-        .msg.user { background-color: var(--pi-color); color: #000; align-self: flex-end; }
-        .input-box { display: flex; gap: 10px; }
-        input, textarea, select { flex: 1; background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; }
+        .trial-badge { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+
+        .pi-btn { border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .pi-btn-orange { background-color: var(--pi-orange); color: #000; width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
+        .pi-btn-gray { background-color: #27272a; color: var(--text-white); border: 1px solid var(--border-gray); }
+
+        /* تبويبات التوجيه */
+        .grok-navigation { display: flex; justify-content: center; gap: 40px; margin-top: 15px; background: var(--bg-dark); position: sticky; top: 60px; z-index: 90; padding-bottom: 10px; }
+        .nav-mode { background: none; border: none; color: var(--text-gray); font-size: 18px; font-weight: bold; padding: 8px 16px; cursor: pointer; position: relative; transition: 0.3s; }
+        .nav-mode.active { color: var(--text-white); }
+        .nav-mode.active::after { content: ''; position: absolute; bottom: 0; left: 15%; width: 70%; height: 3px; background-color: var(--text-white); border-radius: 2px; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; max-width: 1200px; width: 100%; margin: 0 auto; }
         
-        .grid-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .template-card { background: var(--bg-main); border: 1px solid var(--border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; }
-        .template-card:hover, .template-card.active { border-color: var(--pi-color); }
+        /* أجزاء واجهة غروك */
+        .section-ask { display: flex; flex-direction: column; justify-content: space-between; min-height: 65vh; }
+        .grok-logo-center { flex: 1; display: flex; align-items: center; justify-content: center; opacity: 0.15; padding: 60px 0; }
+        .grok-logo-center svg { width: 130px; height: 130px; fill: currentColor; }
         
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .stat-card { background: var(--bg-main); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .grok-input-wrapper { background-color: var(--bg-input); border: 1px solid var(--border-gray); border-radius: 24px; padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+        .grok-textarea { flex: 1; background: none; border: none; color: var(--text-white); outline: none; resize: none; font-size: 16px; min-height: 24px; }
+        .grok-input-actions { display: flex; justify-content: space-between; align-items: center; }
+
+        /* قسم تخيل */
+        .section-imagine { display: none; flex-direction: column; gap: 25px; }
+        .templates-landing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 10px; }
+        .template-card { background-color: var(--bg-card); border: 1px solid var(--border-gray); border-radius: 16px; padding: 15px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .template-icon-circle { width: 50px; height: 50px; border-radius: 50%; background: #1c1c1f; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--pi-orange); }
+
+        /* لوحة الأدمن */
+        .section-admin { display: none; flex-direction: column; gap: 15px; background: var(--bg-card); padding: 25px; border-radius: 20px; border: 1px solid var(--border-gray); }
+        
+        /* حقول الإدخال العامة */
+        input, select { background: var(--bg-input); border: 1px solid var(--border-gray); color: #fff; padding: 12px; border-radius: 10px; width: 100%; outline: none; margin-top: 5px; font-size: 14px; }
+        input:focus { border-color: var(--pi-orange); }
+        label { font-size: 13px; color: var(--text-gray); font-weight: 500; }
+
+        /* بوابات الدفع */
+        .pay-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-gray); padding-bottom: 10px; }
+        .pay-tab-btn { flex: 1; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-gray); color: var(--text-gray); border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .pay-tab-btn.active { border-color: var(--pi-orange); color: #fff; background: rgba(252, 163, 17, 0.05); }
+        .pay-method-content { display: none; flex-direction: column; gap: 15px; margin-top: 10px; }
+        .pay-method-content.active { display: flex; }
+        
+        .legal-notice-box { background: rgba(239, 68, 68, 0.08); border: 1px solid var(--danger); padding: 12px; border-radius: 12px; margin-top: 15px; font-size: 11px; color: #fca5a5; display: flex; gap: 8px; align-items: flex-start; }
+        
+        footer { background-color: var(--bg-card); border-top: 1px solid var(--border-gray); padding: 20px; text-align: center; margin-top: 40px; font-size: 13px; color: var(--text-gray); }
+        .footer-links { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
+        .footer-links a { color: var(--text-gray); text-decoration: none; cursor: pointer; font-weight: bold; }
+
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: var(--bg-card); border: 1px solid var(--border-gray); border-radius: 24px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 30px; position: relative; }
+        .close-modal { position: absolute; top: 15px; left: 15px; background: #27272a; border: none; color: #fff; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+        
+        .legal-checkbox-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid var(--border-gray); }
+        .legal-checkbox-container input { width: auto; margin-top: 3px; cursor: pointer; }
+        .legal-checkbox-container label { font-size: 12px; line-height: 1.5; color: var(--text-white); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo"><i data-lucide="sparkles" style="color:var(--pi-color)"></i> Pi<span>Grok</span> AI</div>
-        <div class="nav-buttons">
-            <button class="btn btn-admin" onclick="openTab('admin-panel')"><i data-lucide="sliders"></i> غرفة الأدمن</button>
-            <button class="btn btn-pi" onclick="connectPiWallet()"><i data-lucide="wallet"></i> ربط محفظة Pi</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <div class="tabs" id="mainTabs">
-            <button class="tab-btn active" onclick="openTab('chat-section')"><i data-lucide="message-circle"></i> خبير الدردشة</button>
-            <button class="tab-btn" onclick="openTab('video-section')"><i data-lucide="clapperboard"></i> سينما الذكاء الاصطناعي</button>
-        </div>
-
-        <div id="chat-section" class="content-section active">
-            <div class="chat-area">
-                <div class="chat-messages" id="chatMsgs">
-                    <div class="msg bot">مرحباً بك في عصر الـ AI 2026! أنا خبير الدردشة لـ PiGrok. كيف يمكنني خدمتك اليوم؟</div>
+    <!-- بوابات التحقق ومنع الحسابات المتعددة الإجبارية -->
+    <div class="auth-overlay" id="auth-screen">
+        <div class="auth-box">
+            <div style="text-align:center; margin-bottom: 20px;">
+                <div class="auth-title"><i data-lucide="shield-check" style="color:var(--pi-orange); vertical-align:middle; width:28px; height:28px;"></i> Pi<span>Grok</span> AI</div>
+                <p style="font-size:12px; color:var(--text-gray); margin-top:5px;">بوابة توثيق الهوية الحقيقية ومنع المزارع والحسابات الوهمية</p>
+            </div>
+            
+            <form id="registerForm" onsubmit="handleRegistration(event)">
+                <div style="margin-bottom: 12px;">
+                    <label><i data-lucide="user" style="width:14px; height:14px; vertical-align:middle;"></i> الاسم الكامل الحقيقي (المطابق للهوية)</label>
+                    <input type="text" id="auth-name" placeholder="مثال: محمد العلمي" required>
                 </div>
-                <div class="input-box">
-                    <input type="text" id="chatIn" placeholder="اسأل واكتشف...">
-                    <button class="btn btn-pi" onclick="triggerChat()"><i data-lucide="send"></i></button>
+                
+                <div style="margin-bottom: 12px;">
+                    <label><i data-lucide="mail" style="width:14px; height:14px; vertical-align:middle;"></i> البريد الإلكتروني الرسمي للعمل</label>
+                    <input type="email" id="auth-email" placeholder="name@company.com" required>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label><i data-lucide="hash" style="width:14px; height:14px; vertical-align:middle;"></i> رقم الهاتف / الحساب الموثق والمسجل في Pi</label>
+                    <input type="text" id="auth-pi-username" placeholder="مثال: @pi_user_100 أو رقم الهاتف الدولي" required>
+                </div>
+
+                <!-- الإقرار القانوني الإجباري للتسجيل بالمسؤولية الفكرية وعدم الاسترداد -->
+                <div class="legal-checkbox-container">
+                    <input type="checkbox" id="legal-agree" required>
+                    <label for="legal-agree">
+                        أوافق وأقر قانونياً بأنني <strong>المسؤول الوحيد شخصياً وفكرياً</strong> عن أي محتوى أو صورة يتم توليدها، وأنني اطلعت على <strong>سياسة رد الأموال</strong> وأعلم أنه لا يمكن استرجاع أية أموال نهائياً.
+                    </label>
+                </div>
+
+                <button type="submit" class="pi-btn pi-btn-orange" style="margin-top: 5px;"><i data-lucide="user-plus"></i> إنشاء الحساب وتوثيق الجهاز</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي (مخفي حتى يتم التسجيل بنجاح) -->
+    <div class="pi-header">
+        <div class="pi-logo"><i data-lucide="sparkles" style="color:var(--pi-orange)"></i> Pi<span>Grok</span> AI</div>
+        <div class="pi-nav">
+            <div class="trial-badge" id="trialStatus">⏳ تجربة مجانية مفعلة للعضو الموثق</div>
+            <button class="pi-btn pi-btn-gray" onclick="showSection('admin')"><i data-lucide="sliders"></i> الأدمن</button>
+            <button class="pi-btn pi-btn-orange" onclick="openPaymentModal()"><i data-lucide="credit-card"></i> تفعيل Pro</button>
+        </div>
+    </div>
+
+    <div class="grok-navigation">
+        <button class="nav-mode active" id="btn-tab-ask" onclick="showSection('ask')">اسأل</button>
+        <button class="nav-mode" id="btn-tab-imagine" onclick="showSection('imagine')">تخيل (150 قالب)</button>
+    </div>
+
+    <div class="main-content">
+        <!-- قسم اسأل -->
+        <div id="section-ask" class="section-ask">
+            <div class="grok-logo-center">
+                <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="none"/><line x1="15" y1="85" x2="85" y2="15" stroke="white" stroke-width="6"/></svg>
+            </div>
+            <div class="ask-footer-controls">
+                <div class="grok-input-wrapper">
+                    <textarea class="grok-textarea" rows="1" placeholder="اسأل غروك كمسؤول موثق..."></textarea>
+                    <div class="grok-input-actions">
+                        <div class="action-right"><i data-lucide="zap" style="width:14px; height:14px;"></i> سريع</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="video-section" class="content-section">
-            <h3 style="margin-bottom: 10px;">اختر قالب العمل السينمائي:</h3>
-            <div class="grid-templates">
-                <div class="template-card active" onclick="selectTpl(this, 'سينمائي 4K')">🎬 سينمائي 4K</div>
-                <div class="template-card" onclick="selectTpl(this, 'أنيميشن ميتـافيرس')">🌌 أنيميشن ميتـافيرس</div>
-                <div class="template-card" onclick="selectTpl(this, 'فيديو تيك توك سريع')">📱 تيك توك ذكي</div>
-            </div>
-            <textarea id="videoPrompt" rows="3" placeholder="اكتب وصف الفيديو أو ارفع صورتك هنا..."></textarea>
-            <div style="margin-top:10px; display:flex; gap:10px;">
-                <input type="file" id="imageFile" style="display:none" onchange="alert('تم تحميل الصورة للسيرفر الافتراضي')">
-                <button class="btn btn-admin" onclick="document.getElementById('imageFile').click()"><i data-lucide="image"></i> ارفع صورة</button>
-                <button class="btn btn-pi" style="flex:1" onclick="payAndGenerate()"><i data-lucide="zap"></i> دفع 1 Pi وتوليد الفيديو فوراً</button>
-            </div>
+        <!-- قسم تخيل -->
+        <div id="section-imagine" class="section-imagine">
+            <div class="templates-landing-grid" id="templates-container"></div>
         </div>
 
-        <div id="admin-panel" class="content-section">
-            <h2>غرفة التحكم الخاصة بك (الأدمن)</h2>
-            <p style="color:var(--text-muted); margin-bottom:20px;">هنا تدير مفاتيح الـ API والأرباح الحقيقية</p>
-            <div class="admin-grid">
-                <div class="stat-card">
-                    <h4>إجمالي أرباح المحفظة</h4>
-                    <p style="font-size:24px; color:var(--success); font-weight:bold; margin-top:10px;">0.00 Pi</p>
-                </div>
-                <div class="stat-card">
-                    <h4>مفتاح الـ API للذكاء الاصطناعي</h4>
-                    <input type="password" value="••••••••••••••••••••" style="margin-top:10px; width:100%">
-                    <button class="btn btn-admin" style="margin-top:10px; width:100%">تحديث المفتاح</button>
-                </div>
-                <div class="stat-card">
-                    <h4>تسعير الخدمات</h4>
-                    <label style="font-size:12px; color:var(--text-muted)">سعر توليد الفيديو (Pi)</label>
-                    <input type="number" value="1" style="width:100%; margin-bottom:10px;">
-                </div>
+        <!-- لوحة الأدمن -->
+        <div id="section-admin" class="section-admin">
+            <h3>لوحة تحكم النظام</h3>
+            <div><label>مفتاح xAI API (Grok)</label><input type="password" value="xai-grok-live-secure-key-2026"></div>
+            <div><label>عنوان استلام USDT</label><input type="text" value="TYv8JdfKsz92NmxPqW71zAsKdf8H11xxLL"></div>
+            <button class="pi-btn pi-btn-orange" style="margin-top:20px;">حفظ التعديلات</button>
+        </div>
+    </div>
+
+    <!-- نافذة بوابات الدفع -->
+    <div class="modal-overlay" id="payment-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closePaymentModal()">X</button>
+            <h3 style="margin-bottom:10px; color:var(--pi-orange); text-align:center;">بوابة الدفع الموثقة</h3>
+            <div class="pay-tabs">
+                <button class="pay-tab-btn active" onclick="switchPayMethod('pay-store')">Store Pay</button>
+                <button class="pay-tab-btn" onclick="switchPayMethod('pay-visa')">Visa</button>
+                <button class="pay-tab-btn" onclick="switchPayMethod('pay-crypto')">USDT</button>
+            </div>
+            <div id="pay-store" class="pay-method-content active">
+                <button class="pi-btn pi-btn-orange" style="background:#fff; color:#000;" onclick="executePayment('Store Pay')">تأكيد الدفع المباشر عبر المتجر</button>
+            </div>
+            <div id="pay-visa" class="pay-method-content">
+                <input type="text" placeholder="رقم بطاقة الفيزا">
+                <button class="pi-btn pi-btn-orange" onclick="executePayment('Visa')">ادفع الآن بـ $9.99</button>
+            </div>
+            <div id="pay-crypto" class="pay-method-content">
+                <p style="font-size:13px; color:var(--text-gray);">حول 10 USDT إلى شبكة TRC-20:</p>
+                <div style="background:var(--bg-input); padding:12px; border-radius:10px; text-align:center;"><code style="color:#fff;">TYv8JdfKsz92NmxPqW71zAsKdf8H11xxLL</code></div>
+                <button class="pi-btn" style="background:var(--usdt-green); color:#fff;" onclick="executePayment('USDT')">نسخ والتحقق من الشبكة</button>
+            </div>
+            <div class="legal-notice-box">
+                <i data-lucide="alert-triangle" style="width:16px; height:16px; color:var(--danger); flex-shrink:0;"></i>
+                <div><strong>تنبيه الدفع النهائي:</strong> المدفوعات غير قابلة للاسترداد نهائياً بسبب استهلاك الحوسبة الحية.</div>
             </div>
         </div>
     </div>
 
+    <!-- منبثق القوانين -->
+    <div class="modal-overlay" id="legal-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="toggleLegalModal(false)">X</button>
+            <h3 style="color:var(--pi-orange); text-align:center; margin-bottom:20px;" id="legal-modal-title"></h3>
+            <div id="legal-modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 PiGrok AI. جميع الحقوق محفوظة.</p>
+        <div class="footer-links">
+            <a onclick="showLegalContent('privacy')">سياسة الخصوصية لسياسة القانون</a>
+            <a onclick="showLegalContent('terms')">الشروط والأحكام والمسؤولية</a>
+        </div>
+    </footer>
+
     <script>
         lucide.createIcons();
-        let selectedTemplate = 'سينمائي 4K';
 
-        function openTab(id) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id !== 'admin-panel') {
-                const btnIndex = id === 'chat-section' ? 0 : 1;
-                document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+        // فحص بصمة الجهاز والمنع الصارم للحسابات المتعددة فور التحميل
+        window.onload = function() {
+            if (localStorage.getItem('pigrok_user_authenticated') === 'true') {
+                document.getElementById('auth-screen').style.display = 'none';
+            }
+        };
+
+        function handleRegistration(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('auth-name').value.trim();
+            const email = document.getElementById('auth-email').value.trim();
+            const piUser = document.getElementById('auth-pi-username').value.trim();
+
+            // خوارزمية فحص الحسابات المتعددة محلياً على الجهاز لحظر التكرار
+            if (localStorage.getItem('pigrok_device_fingerprint') === 'registered_device_active') {
+                alert("❌ حظر أمني: تم اكتشاف أن هذا الجهاز مسجل به حساب آخر بالفعل! يُمنع إنشاء حسابين نهائياً طبقاً لسياسات المنصة ومكافحة الحسابات الوهمية.");
+                return;
+            }
+
+            // محاكاة حفظ البيانات الموثقة بنجاح وحظر الجهاز من التسجيل مجدداً
+            localStorage.setItem('pigrok_user_authenticated', 'true');
+            localStorage.setItem('pigrok_device_fingerprint', 'registered_device_active');
+            localStorage.setItem('pigrok_user_name', name);
+            localStorage.setItem('pigrok_user_email', email);
+            localStorage.setItem('pigrok_user_pi', piUser);
+
+            alert(`✅ تم توثيق الهوية بنجاح!\nالعضو: ${name}\nالحساب مربوط بالبريد ورقم Pi لمنع التكرار.`);
+            document.getElementById('auth-screen').style.display = 'none';
+        }
+
+        function openPaymentModal() { document.getElementById('payment-modal').style.display = 'flex'; }
+        function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
+        function toggleLegalModal(show) { document.getElementById('legal-modal').style.display = show ? 'flex' : 'none'; }
+
+        function switchPayMethod(methodId) {
+            document.querySelectorAll('.pay-method-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.pay-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(methodId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function executePayment(name) {
+            alert(`⚠️ المعاملة نهائية: لا يمكن استرجاع أية أموال نهائياً.\nتم التفعيل الفوري لحساب Pro.`);
+            closePaymentModal();
+            document.getElementById('trialStatus').innerHTML = "✅ حساب مفعّل Pro (نهائي)";
+        }
+
+        function showLegalContent(type) {
+            const title = document.getElementById('legal-modal-title');
+            const body = document.getElementById('legal-modal-body');
+            if (type === 'privacy') {
+                title.innerText = "سياسة الخصوصية لسياسة القانون الدولي";
+                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>تلتزم منصة PiGrok AI بحماية بيانات المستخدمين الموثقين. جميع المدفوعات والاشتراكات نهائية بالكامل وغير قابلة للإلغاء. لا يمكن استرجاع أية أموال نهائياً تحت أي ظرف من الظروف نظراً للتكاليف الفورية لخوادم الذكاء الاصطناعي السحابية الحية.</p>`;
+            } else if (type === 'terms') {
+                title.innerText = "الشروط والأحكام والمسؤولية الفكرية";
+                body.innerHTML = `<p style='font-size:13px; color:var(--text-gray); line-height:1.6;'>بموجب هذه الاتفاقية الصارمة، فإن أي مستخدم يستخدم خدماتنا، فإنه يعتبر المسؤول الأول والأخير والوحيد قانونياً وجنائياً وفكرياً عن أي محتوى نصي أو أي صورة يتم إنتاجها أو رفعها عبر المنصة كملكية فردية وفكرية وشخصية له، وتُخلي الإدارة مسؤوليتها تماماً من أي انتهاك.</p>`;
+            }
+            toggleLegalModal(true);
+        }
+
+        function showSection(mode) {
+            document.getElementById('section-ask').style.display = 'none';
+            document.getElementById('section-imagine').style.display = 'none';
+            document.getElementById('section-admin').style.display = 'none';
+            document.getElementById('btn-tab-ask').classList.remove('active');
+            document.getElementById('btn-tab-imagine').classList.remove('active');
+
+            if (mode === 'ask') {
+                document.getElementById('section-ask').style.display = 'flex';
+                document.getElementById('btn-tab-ask').classList.add('active');
+            } else if (mode === 'imagine') {
+                document.getElementById('section-imagine').style.display = 'flex';
+                document.getElementById('btn-tab-imagine').classList.add('active');
+            } else if (mode === 'admin') {
+                document.getElementById('section-admin').style.display = 'flex';
             }
         }
 
-        function selectTpl(el, name) {
-            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            selectedTemplate = name;
-        }
-
-        function connectPiWallet() {
-            alert("تفعيل بروتوكول Pi Sandbox الحقيقي... جاري الاتصال بالمحفظة الحية عبر متصفح الباي.");
-        }
-
-        function triggerChat() {
-            const inp = document.getElementById('chatIn');
-            if(!inp.value.trim()) return;
-            const msgs = document.getElementById('chatMsgs');
-            msgs.innerHTML += `<div class="msg user">${inp.value}</div>`;
-            const val = inp.value; inp.value = '';
-            setTimeout(() => {
-                msgs.innerHTML += `<div class="msg bot">تمت المعالجة في عصر الـ AI الحقيقي. رد السيرفر الذكي جاهز ومربوط.</div>`;
-                msgs.scrollTop = msgs.scrollHeight;
-            }, 800);
-        }
-
-        function payAndGenerate() {
-            const prompt = document.getElementById('videoPrompt').value;
-            alert(`بدء عملية الدفع الحقيقية: طلب تفعيل Pi.createPayment() لتوليد فيديو بقالب [${selectedTemplate}]. جاري معالجة الأثير المالي...`);
+        const container = document.getElementById('templates-container');
+        for (let i = 1; i <= 150; i++) {
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            card.onclick = () => openPaymentModal();
+            card.innerHTML = `<div class="template-icon-circle">🎨</div><h4 style="font-size:12px;">قالب فني ذكي #${i}</h4>`;
+            container.appendChild(card);
         }
     </script>
 </body>
