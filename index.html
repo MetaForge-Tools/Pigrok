@@ -1,641 +1,262 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PiGrok AI - المنصة الذكية لشبكة Pi</title>
-    <!-- تضمين مكتبة Pi SDK الرسمية -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <!-- أيقونات FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-main: #0b0b0c;
-            --bg-card: #151618;
-            --bg-input: #1e2022;
-            --text-primary: #ffffff;
-            --text-secondary: #8b8e93;
-            --accent-color: #f39c12; 
-            --accent-blue: #1d9bf0; 
-            --border-color: #2f3336;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            overflow-x: hidden;
-        }
-
-        /* شاشة التوثيق والحماية */
-        #auth-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-main);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .auth-container {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 450px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-
-        .auth-logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        .auth-logo i { color: var(--accent-color); }
-        .auth-subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 25px; }
-
-        .form-group { margin-bottom: 16px; text-align: right; }
-        .form-group label { display: block; color: var(--text-secondary); font-size: 12px; margin-bottom: 6px; }
-        .form-group input {
-            width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color);
-            color: var(--text-primary); padding: 12px; border-radius: 8px; outline: none; font-size: 14px; text-align: right;
-        }
-        .form-group input:focus { border-color: var(--accent-color); }
-
-        .legal-check {
-            display: flex; align-items: flex-start; gap: 10px; text-align: right; margin: 20px 0;
-            color: var(--text-secondary); font-size: 12px; line-height: 1.5;
-        }
-        .legal-check input { margin-top: 3px; cursor: pointer; }
-
-        .btn-submit {
-            width: 100%; background-color: var(--accent-color); color: #000; border: none;
-            padding: 14px; border-radius: 25px; font-weight: bold; font-size: 15px; cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-        }
-
-        /* الهيكل الرئيسي للتطبيق */
-        #app-interface { display: none; }
-
-        /* الهيدر العلوي */
-        .top-navbar {
-            display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
-            border-bottom: 1px solid var(--border-color); position: fixed; top: 0; left: 0; width: 100%;
-            background-color: var(--bg-main); z-index: 100;
-        }
-
-        .nav-right { display: flex; align-items: center; gap: 15px; }
-        .menu-toggle { font-size: 20px; cursor: pointer; color: var(--text-primary); }
-        .app-title { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
-        .app-title i { color: var(--accent-color); }
-
-        .nav-center { display: flex; gap: 20px; }
-        .tab-link {
-            color: var(--text-secondary); font-size: 15px; font-weight: 500; cursor: pointer; padding: 6px 4px; position: relative;
-        }
-        .tab-link.active { color: var(--text-primary); }
-        .tab-link.active::after {
-            content: ''; position: absolute; bottom: -13px; left: 0; width: 100%; height: 3px;
-            background-color: var(--accent-color); border-radius: 3px;
-        }
-
-        .nav-left { display: flex; align-items: center; gap: 10px; }
-        .badge-premium {
-            background-color: rgba(243, 156, 18, 0.1); border: 1px solid var(--accent-color);
-            color: var(--accent-color); padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;
-        }
-        .trial-badge {
-            background-color: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71;
-            color: #2ecc71; padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;
-        }
-        .btn-billing {
-            background-color: var(--accent-color); color: #000; border: none; padding: 6px 12px;
-            border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer;
-        }
-        .btn-settings-icon {
-            background: transparent; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; padding: 4px;
-        }
-        .btn-settings-icon:hover { color: var(--text-primary); }
-
-        /* القائمة الجانبية (Sidebar) */
-        .sidebar {
-            position: fixed; top: 0; right: -280px; width: 280px; height: 100%;
-            background-color: var(--bg-card); border-left: 1px solid var(--border-color);
-            z-index: 1000; transition: right 0.3s ease; padding: 20px; display: flex; flex-direction: column;
-        }
-        .sidebar.open { right: 0; }
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5); z-index: 999; display: none;
-        }
-        .sidebar-overlay.show { display: block; }
-
-        .profile-section {
-            display: flex; align-items: center; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;
-        }
-        .avatar-circle {
-            width: 40px; height: 40px; background-color: var(--accent-color); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; color: #000;
-        }
-        .profile-info h4 { font-size: 15px; margin-bottom: 2px; }
-        .profile-info p { font-size: 11px; color: var(--text-secondary); }
-
-        .side-menu-items { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .side-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-primary); text-decoration: none; cursor: pointer; font-size: 14px;
-        }
-        .side-item:hover { background-color: var(--bg-input); }
-        .side-item i { font-size: 16px; width: 20px; text-align: center; color: var(--text-secondary); }
-
-        /* حاويات الأقسام العامة */
-        .main-content { margin-top: 60px; min-height: calc(100vh - 60px); padding: 20px; display: none; }
-        .main-content.active { display: block; }
-
-        /* ================= قسم اسأل ================= */
-        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 100px); max-width: 700px; margin: 0 auto; justify-content: space-between; }
-        .chat-feed { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 20px; }
-        .chat-welcome { text-align: center; margin: auto; color: var(--text-secondary); }
-        .chat-welcome i { font-size: 60px; color: var(--border-color); margin-bottom: 15px; }
-        
-        .input-area-wrapper { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 10px 16px; margin-bottom: 10px; }
-        .chat-input-row { display: flex; align-items: center; gap: 10px; }
-        .chat-input-row textarea { flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); resize: none; font-size: 15px; height: 24px; }
-        .btn-chat-send { background-color: var(--text-primary); color: #000; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 13px; }
-
-        .grok-tools-ribbon { display: flex; gap: 8px; overflow-x: auto; padding-top: 10px; border-top: 1px solid var(--border-color); margin-top: 10px; }
-        .tool-chip { background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 14px; border-radius: 16px; font-size: 12px; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-
-        /* ================= معرض المشاريع والأعمال ================= */
-        .projects-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        .project-item-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .project-meta-side { display: flex; align-items: center; gap: 14px; }
-        .project-icon-box { width: 48px; height: 48px; background-color: var(--bg-input); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; color: #e74c3c; }
-
-        /* ================= لوحة تحكم الآدمن المطور ================= */
-        .admin-box { max-width: 600px; margin: 0 auto; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; }
-        .admin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px; }
-
-        /* ================= نافذة الترقية الاحترافية (SuperGrok Style) ================= */
-        .billing-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85); z-index: 2000;
-            display: flex; justify-content: center; align-items: center;
-            visibility: hidden; opacity: 0; transition: opacity 0.3s, visibility 0.3s;
-        }
-        .billing-modal-overlay.open { visibility: visible; opacity: 1; }
-        
-        .billing-card-body {
-            background-color: var(--bg-main); border: 1px solid var(--border-color);
-            border-radius: 24px; width: 100%; max-width: 480px; padding: 24px;
-            position: relative; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
-            max-height: 90vh; overflow-y: auto;
-        }
-        .close-billing-btn { position: absolute; top: 20px; left: 20px; color: var(--text-secondary); font-size: 20px; cursor: pointer; }
-        .close-billing-btn:hover { color: #fff; }
-
-        .billing-header { text-align: center; margin-top: 10px; margin-bottom: 20px; }
-        .heavy-badge { background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px; }
-        .billing-main-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
-        .discount-announcement { color: #f39c12; font-size: 15px; font-weight: bold; margin-bottom: 15px; }
-
-        /* أزرار تحديد نوع الحساب والفترة */
-        .selector-tabs-row { display: flex; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 4px; margin-bottom: 12px; }
-        .selector-tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-        .selector-tab.active { background-color: var(--bg-input); color: #fff; border: 1px solid rgba(255,255,255,0.05); }
-
-        /* قائمة المزايا الدقيقة */
-        .benefits-list { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px; text-align: right; }
-        .benefit-item { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.4; color: #e2e8f0; }
-        .benefit-item i { color: var(--text-secondary); font-size: 15px; margin-top: 2px; }
-
-        /* منطقة السعر والعرض المخصص */
-        .price-card-box { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 20px; position: relative; }
-        .price-offer-badge { background-color: rgba(243,156,18,0.15); border: 1px solid #f39c12; color: #f39c12; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; position: absolute; top: -11px; right: 16px; }
-        .period-label { font-size: 12px; color: var(--text-secondary); display: block; margin-top: 8px; margin-bottom: 4px; text-align: right; }
-        .price-display-line { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; }
-        .old-price { text-decoration: line-through; color: #565a5f; font-size: 16px; font-weight: bold; }
-        .current-price { font-size: 24px; font-weight: 800; color: #fff; }
-
-        .btn-upgrade-final { width: 100%; background-color: #fff; color: #000; border: none; padding: 15px; border-radius: 25px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center; transition: transform 0.2s; }
-        .btn-upgrade-final:hover { transform: scale(1.01); }
-        .legal-footer-links { text-align: center; font-size: 11px; color: var(--text-secondary); margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
-
-        /* الإعدادات العامة المنبثقة */
-        .modal-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; visibility: hidden; opacity: 0; transition: opacity 0.2s, visibility 0.2s; }
-        .modal-popup.open { visibility: visible; opacity: 1; }
-        .modal-body { background-color: var(--bg-card); border-top: 1px solid var(--border-color); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; padding: 25px; }
-        .modal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
-        .modal-close { font-size: 18px; cursor: pointer; color: var(--text-secondary); }
-    </style>
-</head>
-<body>
-
-    <!-- 1️⃣ شاشة التوثيق الصارمة -->
-    <div id="auth-screen">
-        <div class="auth-container">
-            <div class="auth-logo"><i class="fa-solid fa-shield-halved"></i> PiGrok AI</div>
-            <div class="auth-subtitle">سجل الدخول بحساب Pi لتفعيل لوحة التحكم والمنع الصارم للتكرار</div>
-            
-            <div class="form-group">
-                <label>الاسم الكامل</label>
-                <input type="text" id="auth-name" value="Boujema" placeholder="مثال: محمد العلمي">
-            </div>
-            <div class="form-group">
-                <label>البريد الإلكتروني للعمل</label>
-                <input type="email" id="auth-email" value="bjma981985@gmail.com" placeholder="name@company.com">
-            </div>
-
-            <div class="legal-check">
-                <input type="checkbox" id="auth-legal" checked>
-                <label for="auth-legal">أوافق على شروط الاستخدام وسياسة الخصوصية لشبكة الباي.</label>
-            </div>
-
-            <button class="btn-submit" onclick="submitAuthentication()">
-                <span>دخول آمن للمنصة</span>
-                <i class="fa-solid fa-circle-check"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- 2️⃣ الهيكل الرئيسي للتطبيق -->
-    <div id="app-interface">
-        
-        <!-- الهيدر العلوي المطور -->
-        <header class="top-navbar">
-            <div class="nav-right">
-                <i class="fa-solid fa-bars menu-toggle" onclick="toggleSidebar(true)"></i>
-                <div class="app-title" onclick="handleAdminClick()"><i class="fa-solid fa-g"></i> Grok Pi</div>
-            </div>
-            <div class="nav-center">
-                <span class="tab-link active" id="tab-ask-lnk" onclick="switchTab('ask')">اسأل</span>
-                <span class="tab-link" id="tab-projects-lnk" onclick="switchTab('projects')">المشاريع والأعمال</span>
-            </div>
-            <div class="nav-left">
-                <span id="user-tier-badge" class="trial-badge">فترة تجريبية</span>
-                <button class="btn-billing" onclick="openBillingModal()">ترقية / شحن</button>
-                <button class="btn-settings-icon" onclick="openGeneralSettingsModal()">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- القائمة الجانبية (Sidebar) -->
-        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
-        <aside class="sidebar" id="app-sidebar">
-            <div class="profile-section">
-                <div class="avatar-circle">B</div>
-                <div class="profile-info">
-                    <h4 id="side-username">Boujema</h4>
-                    <p id="side-useremail">bjma981985@gmail.com</p>
-                </div>
-            </div>
-            <nav class="side-menu-items">
-                <div class="side-item" onclick="switchTab('ask'); toggleSidebar(false);"><i class="fa-solid fa-message"></i>المحادثة الذكية</div>
-                <div class="side-item" onclick="switchTab('projects'); toggleSidebar(false);"><i class="fa-solid fa-folder-open"></i>معرض المشاريع</div>
-                <div class="side-item" onclick="openGeneralSettingsModal(); toggleSidebar(false);"><i class="fa-solid fa-sliders"></i>إعدادات الحساب</div>
-            </nav>
-        </aside>
-
-        <!-- 🏢 محتوى قسم: اسأل -->
-        <main class="main-content active" id="content-ask">
-            <div class="chat-container">
-                <div class="chat-feed" id="chat-messages">
-                    <div class="chat-welcome">
-                        <i class="fa-solid fa-compass"></i>
-                        <h3>مرحباً بك في وعاء PiGrok الذكي</h3>
-                        <p id="trial-days-left">باقي لك 3 أيام في المدة التجريبية المجانية</p>
-                    </div>
-                </div>
-
-                <div class="input-area-wrapper">
-                    <div class="chat-input-row">
-                        <textarea id="chat-textarea" placeholder="اسأل عن أي شيء..."></textarea>
-                        <button class="btn-chat-send" onclick="sendChatMessage()">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- 🏢 محتوى قسم: معرض المشاريع -->
-        <main class="main-content" id="content-projects">
-            <div class="projects-header">
-                <h2>معرض الأعمال والمشاريع</h2>
-                <p>الملفات والسكربتات المنتجة</p>
-            </div>
-            <div class="project-item-card">
-                <div class="project-meta-side">
-                    <div class="project-icon-box"><i class="fa-solid fa-video"></i></div>
-                    <div>
-                        <h4>فيديو ساعة بيغ بن والفيزياء</h4>
-                        <span>صيغة: MP4 • دقة عالية</span>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- 🏢 محتوى قسم: لوحة الآدمن المطور (تخصيص كامل للأسعار) -->
-        <main class="main-content" id="content-admin">
-            <div class="admin-box">
-                <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-gears" style="color: var(--accent-color);"></i> لوحة التحكم في أسعار الباقات (الآدمن)</h3>
-                
-                <h4 style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">أسعار الحساب الفردي (Individual)</h4>
-                <div class="admin-grid">
-                    <div class="form-group">
-                        <label>سعر شهري (Pi)</label>
-                        <input type="number" id="adm-ind-month" value="20" oninput="savePricesToStorage()">
-                    </div>
-                    <div class="form-group">
-                        <label>سعر سنوي (Pi)</label>
-                        <input type="number" id="adm-ind-year" value="180" oninput="savePricesToStorage()">
-                    </div>
-                </div>
-
-                <h4 style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">أسعار حساب الشركات (Company)</h4>
-                <div class="admin-grid">
-                    <div class="form-group">
-                        <label>سعر شهري (Pi)</label>
-                        <input type="number" id="adm-com-month" value="100" oninput="savePricesToStorage()">
-                    </div>
-                    <div class="form-group">
-                        <label>سعر سنوي (Pi)</label>
-                        <input type="number" id="adm-com-year" value="900" oninput="savePricesToStorage()">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>مدة الفترة التجريبية المجانية (بالأيام)</label>
-                    <input type="number" id="adm-trial-days" value="3" oninput="savePricesToStorage()">
-                </div>
-
-                <button class="btn-submit" style="background-color: var(--text-primary);" onclick="applyAdminSettings()">حفظ وإعادة تطبيق الأسعار فوراً</button>
-            </div>
-        </main>
-
-    </div>
-
-    <!-- ⚙️ نافذة الإعدادات العامة (المنبثقة) -->
-    <div class="modal-popup" id="general-settings-modal">
-        <div class="modal-body">
-            <div class="modal-header-row">
-                <h4><i class="fa-solid fa-gear"></i> إعدادات الحساب والمنصة</h4>
-                <i class="fa-solid fa-xmark modal-close" onclick="closeGeneralSettingsModal()"></i>
-            </div>
-            <div class="form-group">
-                <p id="settings-status-desc" style="font-size:14px; margin-bottom:10px;">الحالة الحالية: فترة تجريبية مجانية</p>
-                <span id="settings-status-badge" class="trial-badge">نشط تجريبي</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- 💳 3️⃣ نافذة الترقية والشحن الاحترافية (SuperGrok Style) -->
-    <div class="billing-modal-overlay" id="billing-modal">
-        <div class="billing-card-body">
-            <i class="fa-solid fa-xmark close-billing-btn" onclick="closeBillingModal()"></i>
-            
-            <div class="billing-header">
-                <div class="heavy-badge">Heavy SuperGrok</div>
-                <h2 class="billing-main-title">SuperGrok</h2>
-                <div class="discount-announcement">احصل على 67% خصم لفترة محدودة</div>
-            </div>
-
-            <!-- الاختيار 1: نوع الحساب (فردي / شركة) -->
-            <div class="selector-tabs-row">
-                <div class="selector-tab active" id="type-ind-btn" onclick="setAccountType('individual')">حساب فردي</div>
-                <div class="selector-tab" id="type-com-btn" onclick="setAccountType('company')">حساب شركة</div>
-            </div>
-
-            <!-- الاختيار 2: المدة الزمنية (شهر / سنة) -->
-            <div class="selector-tabs-row">
-                <div class="selector-tab active" id="period-month-btn" onclick="setBillingPeriod('month')">شهرياً</div>
-                <div class="selector-tab" id="period-year-btn" onclick="setBillingPeriod('year')">سنوياً</div>
-            </div>
-
-            <!-- قائمة المزايا الدقيقة مأخوذة من لقطة شاشة تطبيق Grok الأصلية -->
-            <div class="benefits-list">
-                <div class="benefit-item"><i class="fa-regular fa-compass"></i><span>كل شيء في SuperGrok</span></div>
-                <div class="benefit-item"><i class="fa-solid fa-brain"></i><span>يتعامل مع أصعب المشاكل والملفات والمعادلات</span></div>
-                <div class="benefit-item"><i class="fa-solid fa-rocket"></i><span>أعلى حدود استخدام للذكاء الاصطناعي وبدون قيود</span></div>
-                <div class="benefit-item"><i class="fa-solid fa-bolt"></i><span>وكيل ذكاء اصطناعي في وضع الخبير 16x</span></div>
-                <div class="benefit-item"><i class="fa-solid fa-users"></i><span>فريق كبير من وكلاء الذكاء الاصطناعي يشتغلون مع بعض عشان توصل لأفضل إجابات</span></div>
-                <div class="benefit-item"><i class="fa-regular fa-heart"></i><span>دعم مخصص ووصول مبكر للميزات الحصرية</span></div>
-            </div>
-
-            <!-- صندوق السعر الديناميكي المربوط بالآدمن -->
-            <div class="price-card-box">
-                <div class="price-offer-badge" id="discount-timer-label">وفر 67% خلال الـ 3 أشهر القادمة</div>
-                <span class="period-label" id="billing-period-text">الدفع شهرياً</span>
-                <div class="price-display-line">
-                    <!-- السعر المشطوب التلقائي لإعطاء انطباع الخصم الجذاب -->
-                    <span class="old-price" id="old-price-display">60 Pi</span>
-                    <span class="current-price" id="current-price-display">20 Pi</span>
-                </div>
-            </div>
-
-            <!-- زر الترقية النهائي -->
-            <button class="btn-upgrade-final" id="upgrade-action-btn" onclick="executePiPayment()">
-                الترقية إلى SuperGrok Heavy
-            </button>
-
-            <div class="legal-footer-links">
-                <span style="cursor:pointer;">الشروط</span> • <span style="cursor:pointer;">سياسة الخصوصية</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let adminClicksCount = 0;
-        
-        // المتغيرات الحالية لخيارات المستخدم داخل نافذة الترقية
-        let selectedAccountType = 'individual'; // individual أو company
-        let selectedBillingPeriod = 'month';    // month أو year
-
-        // تفقد قيم التخزين أو تعيين الافتراضية
-        if (!localStorage.getItem('p_ind_month')) localStorage.setItem('p_ind_month', '20');
-        if (!localStorage.getItem('p_ind_year')) localStorage.setItem('p_ind_year', '180');
-        if (!localStorage.getItem('p_com_month')) localStorage.setItem('p_com_month', '100');
-        if (!localStorage.getItem('p_com_year')) localStorage.setItem('p_com_year', '900');
-        if (!localStorage.getItem('p_trial_days')) localStorage.setItem('p_trial_days', '3');
-        if (!localStorage.getItem('user_premium_status')) localStorage.setItem('user_premium_status', 'false');
-
-        window.onload = function() {
-            if (localStorage.getItem('pigrok_authenticated') === 'true') {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-interface').style.display = 'block';
-                loadUserData();
-                renderDynamicBillingUI();
-            }
-        };
-
-        function submitAuthentication() {
-            localStorage.setItem('pigrok_authenticated', 'true');
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('app-interface').style.display = 'block';
-            loadUserData();
-            renderDynamicBillingUI();
-        }
-
-        function loadUserData() {
-            document.getElementById('side-username').innerText = "Boujema";
-            document.getElementById('side-useremail').innerText = "bjma981985@gmail.com";
-        }
-
-        // حفظ الأسعار المعدلة من لوحة التحكم (الآدمن)
-        function savePricesToStorage() {
-            localStorage.setItem('p_ind_month', document.getElementById('adm-ind-month').value);
-            localStorage.setItem('p_ind_year', document.getElementById('adm-ind-year').value);
-            localStorage.setItem('p_com_month', document.getElementById('adm-com-month').value);
-            localStorage.setItem('p_com_year', document.getElementById('adm-com-year').value);
-            localStorage.setItem('p_trial_days', document.getElementById('adm-trial-days').value);
-        }
-
-        function applyAdminSettings() {
-            renderDynamicBillingUI();
-            alert('تم حفظ كاع الأسعار والمدد وتحديث واجهة الترقية بنجاح!');
-            switchTab('ask');
-        }
-
-        // تغيير نوع الحساب في واجهة الترقية
-        function setAccountType(type) {
-            selectedAccountType = type;
-            document.getElementById('type-ind-btn').classList.toggle('active', type === 'individual');
-            document.getElementById('type-com-btn').classList.toggle('active', type === 'company');
-            renderDynamicBillingUI();
-        }
-
-        // تغيير فترة الدفع في واجهة الترقية
-        function setBillingPeriod(period) {
-            selectedBillingPeriod = period;
-            document.getElementById('period-month-btn').classList.toggle('active', period === 'month');
-            document.getElementById('period-year-btn').classList.toggle('active', period === 'year');
-            renderDynamicBillingUI();
-        }
-
-        // دالة الحساب والعرض الديناميكي للأسعار فالبوابة بناء على اختيارات المستخدم
-        function renderDynamicBillingUI() {
-            let priceKey = `p_${selectedAccountType}_${selectedBillingPeriod}`;
-            let currentPrice = parseFloat(localStorage.getItem(priceKey)) || 0;
-            
-            // احتساب السعر القديم المشطوب تلقائياً لإظهار الخصم (ضرب 3 مثلاً لتماشي نسبة الـ 67%)
-            let oldPrice = Math.round(currentPrice * 3);
-
-            // تحديث النصوص والأسعار داخل الـ Modal
-            document.getElementById('current-price-display').innerText = `${currentPrice} Pi`;
-            document.getElementById('old-price-display').innerText = `${oldPrice} Pi`;
-            
-            if (selectedBillingPeriod === 'month') {
-                document.getElementById('billing-period-text').innerText = "الدفع شهرياً";
-                document.getElementById('discount-timer-label').innerText = "وفر 67% خلال الـ 3 أشهر القادمة";
-                document.getElementById('upgrade-action-btn').innerText = "الترقية إلى SuperGrok Heavy شهرياً";
-            } else {
-                document.getElementById('billing-period-text').innerText = "الدفع سنوياً (أفضل قيمة)";
-                document.getElementById('discount-timer-label').innerText = "وفر 67% عند الالتزام السنوي الكامل";
-                document.getElementById('upgrade-action-btn').innerText = "الترقية إلى SuperGrok Heavy سنوياً";
-            }
-
-            // تحديث شارات الحالة العامة فالهيدر والتطبيق
-            const trialDays = localStorage.getItem('p_trial_days');
-            const isPremium = localStorage.getItem('user_premium_status') === 'true';
-            const tierBadge = document.getElementById('user-tier-badge');
-
-            if (isPremium) {
-                tierBadge.innerText = "باقة مدفوعة";
-                tierBadge.className = "badge-premium";
-                document.getElementById('trial-days-left').innerText = "الحساب نشط وموثق بالكامل عبر شبكة Pi Network";
-                document.getElementById('settings-status-desc').innerText = "الحالة الحالية: باقة SuperGrok المدفوعة نشطة";
-                document.getElementById('settings-status-badge').className = "badge-premium";
-                document.getElementById('settings-status-badge').innerText = "مدفوع";
-            } else {
-                tierBadge.innerText = "فترة تجريبية";
-                tierBadge.className = "trial-badge";
-                document.getElementById('trial-days-left').innerText = `باقي لك ${trialDays} أيام في المدة التجريبية المجانية`;
-                document.getElementById('settings-status-desc').innerText = "الحالة الحالية: فترة تجريبية مجانية";
-                document.getElementById('settings-status-badge').className = "trial-badge";
-                document.getElementById('settings-status-badge').innerText = "نشط تجريبي";
-            }
-
-            // تعبئة خانات الآدمن بالقيم الحالية منعاً لضياع البيانات
-            document.getElementById('adm-ind-month').value = localStorage.getItem('p_ind_month');
-            document.getElementById('adm-ind-year').value = localStorage.getItem('p_ind_year');
-            document.getElementById('adm-com-month').value = localStorage.getItem('p_com_month');
-            document.getElementById('adm-com-year').value = localStorage.getItem('p_com_year');
-            document.getElementById('adm-trial-days').value = trialDays;
-        }
-
-        function executePiPayment() {
-            let priceKey = `p_${selectedAccountType}_${selectedBillingPeriod}`;
-            let price = localStorage.getItem(priceKey);
-            
-            alert(`جاري الاتصال بـ Pi Wallet لطلب عملية دفع بمبلغ ${price} Pi لحساب (${selectedAccountType === 'individual' ? 'فردي' : 'شركة'}) لفترة (${selectedBillingPeriod === 'month' ? 'شهر' : 'سنة'})...`);
-            
-            localStorage.setItem('user_premium_status', 'true');
-            renderDynamicBillingUI();
-            closeBillingModal();
-            alert('تم تأكيد المعاملة بنجاح عبر البلوكشين وتفعيل الحساب الاحترافي الدائم!');
-        }
-
-        // فتح وإغلاق النوافذ
-        function openBillingModal() { document.getElementById('billing-modal').classList.add('open'); }
-        function closeBillingModal() { document.getElementById('billing-modal').classList.remove('open'); }
-        function openGeneralSettingsModal() { document.getElementById('general-settings-modal').classList.add('open'); }
-        function closeGeneralSettingsModal() { document.getElementById('general-settings-modal').classList.remove('open'); }
-
-        function toggleSidebar(open) {
-            const sidebar = document.getElementById('app-sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (open) { sidebar.classList.add('open'); overlay.classList.add('show'); }
-            else { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.main-content').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.tab-link').forEach(lnk => lnk.classList.remove('active'));
-            document.getElementById('content-' + tabId).classList.add('active');
-            if(document.getElementById('tab-' + tabId + '-lnk')) {
-                document.getElementById('tab-' + tabId + '-lnk').classList.add('active');
-            }
-        }
-
-        function handleAdminClick() {
-            adminClicksCount++;
-            if (adminClicksCount === 5) {
-                adminClicksCount = 0;
-                alert('تم فتح لوحة تحكم الآدمن السرية لتخصيص أسعار الفردي والشركات والمدد الزمنية.');
-                switchTab('admin');
-            }
-        }
-
-        function sendChatMessage() {
-            const txtArea = document.getElementById('chat-textarea');
-            if (!txtArea.value.trim()) return;
-            const feed = document.getElementById('chat-messages');
-            const welcomeMsg = feed.querySelector('.chat-welcome');
-            if (welcomeMsg) welcomeMsg.remove();
-            
-            const userDiv = document.createElement('div');
-            userDiv.style.cssText = "background: var(--bg-card); padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); text-align: right; width: fit-content; max-width: 80%; margin-right: auto;";
-            userDiv.innerText = txtArea.value;
-            feed.appendChild(userDiv);
-            txtArea.value = '';
-            feed.scrollTop = feed.scrollHeight;
-        }
-    </script>
-</body>
-</html>
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const PiGrokApp());
+}
+
+class PiGrokApp extends StatelessWidget {
+  const PiGrokApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'PiGrok AI',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0B0B0B), // الخلفية الداكنة الأصلية
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0B0B0B),
+          elevation: 0,
+        ),
+      ),
+      // لتدعيم واجهة اللغة العربية من اليمين إلى اليسار
+      localizationsDelegates: const [
+        DefaultMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ar', 'MA'), 
+      ],
+      locale: const Locale('ar', 'MA'),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _chatController = TextEditingController();
+
+  // قائمة الخيارات السريعة المأخوذة من لقطات الشاشة بالتطابق
+  final List<Map<String, dynamic>> _quickOptions = [
+    {'text': 'عرض سوبرغروك', 'icon': Icons.bolt, 'isBlue': true},
+    {'text': 'جرب الروابط', 'icon': Icons.link, 'isBlue': false},
+    {'text': 'إنشاء مقاطع فيديو', 'icon': Icons.video_collection, 'isBlue': false},
+    {'text': 'تعديل صورة', 'icon': Icons.image, 'isBlue': false},
+    {'text': 'وضع الصوت', 'icon': Icons.mic, 'isBlue': false},
+    {'text': 'فتح الكاميرا', 'icon': Icons.camera_alt, 'isBlue': false},
+    {'text': 'تحليل المستندات', 'icon': Icons.description, 'isBlue': false},
+    {'text': 'تخصيص Grok', 'icon': Icons.tune, 'isBlue': false},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      drawer: const Drawer(), // القائمة الجانبية لسجل المحادثات
+      appBar: AppBar(
+        centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'تخيل',
+              style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 20),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'اسأل',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  height: 2,
+                  width: 30,
+                  color: Colors.white,
+                )
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // الشعار المركزي في وسط الشاشة
+            Expanded(
+              child: Center(
+                child: Opacity(
+                  opacity: 0.15,
+                  child: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/X_logo_2023.svg/640px-X_logo_2023.svg.png', 
+                    width: 180,
+                    height: 180,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.blur_circular_rounded,
+                      size: 150,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // شريط الخيارات السريعة الأفقي (قابل للسحب)
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: SizedBox(
+                height: 45,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _quickOptions.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemBuilder: (context, index) {
+                    final option = _quickOptions[index];
+                    final isBlue = option['isBlue'] as bool;
+                    return Container(
+                      margin: const EdgeInsets.only(left: 8),
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: Icon(
+                          option['icon'],
+                          size: 16,
+                          color: isBlue ? Colors.white : Colors.grey[300],
+                        ),
+                        label: Text(
+                          option['text'],
+                          style: TextStyle(
+                            color: isBlue ? Colors.white : Colors.grey[300],
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isBlue ? const Color(0xFF0056B3) : const Color(0xFF1E1E1E),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color: isBlue ? Colors.transparent : Colors.grey[800]!,
+                              width: 0.5,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          elevation: 0,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // صندوق الإدخال السفلي الذكي مع الأزرار الداخلية
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF161616),
+                    borderRadius: BorderRadius.circular(28),
+                    border: BorderSide(color: Colors.grey[800]!, width: 0.8),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: TextField(
+                          controller: _chatController,
+                          maxLines: null,
+                          style: const TextStyle(color: Colors.white, fontSize: 15),
+                          decoration: const InputDecoration(
+                            hintText: 'اسأل عن أي شيء...',
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                        child: Row(
+                          children: [
+                            // زر التحدث والمايكروفون المدمج
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.volume_up, color: Colors.black, size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'تكلم',
+                                    style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.mic_none_rounded, color: Colors.grey[500], size: 22),
+                            const Spacer(),
+                            
+                            // زر تحديد وضع السرعة والـ +
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF222222),
+                                borderRadius: BorderRadius.circular(16),
+                                border: BorderSide(color: Colors.grey[800]!, width: 0.5),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.expand_more, color: Colors.grey[400], size: 16),
+                                  const SizedBox(width: 4),
+                                  const Text('سريع', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.flash_on, color: Colors.grey[400], size: 14),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF222222),
+                                shape: BoxShape.circle,
+                                border: BorderSide(color: Colors.grey[800]!, width: 0.5),
+                              ),
+                              child: Icon(Icons.add, color: Colors.grey[400], size: 18),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
